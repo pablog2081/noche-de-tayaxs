@@ -72,7 +72,7 @@ const WARNES=[
 function vWarnes(){const m=$("#main"),T=tyPz(),cerrado=!!S.tayaJ;m.innerHTML="";hud();
   const d=el(`<div class="warnes"><div class="calle"><div class="cartel">Av. WARNES</div><span>la calle de los repuestos</span></div>
     <div class="row" style="justify-content:space-between;align-items:center;gap:10px;margin:14px 0 6px"><p class="sub" style="margin:0">Comprá antes de la fecha: durante la noche solo vas a poder usar lo que tengas en stock.</p><button class="btn sec" id="wVol" style="width:auto;flex:0 0 auto">◀ Inicio</button></div>
-    ${cerrado?`<p class="nota" style="color:var(--rojo)">La noche ya empezó: Warnes está cerrado hasta que termine la fecha. Usá lo que tenés en stock, o abandoná la noche desde el box y llevá el auto al taller.</p>`:""}
+    ${cerrado?`<p class="nota" style="color:var(--rojo)">La noche ya empezó: Warnes está cerrado hasta que termine la fecha. Usá lo que tenés en stock, o abandoná la noche y llevá el auto al taller.</p><button class="btn sec" id="wAb" style="width:auto;margin-bottom:8px">Abandonar la noche e ir al taller</button>`:""}
     <div class="wgrid"></div><div class="copa" style="margin-top:16px"><div class="t">Tu midget</div>${pzEstadoHTML(null)}<div class="sec-t" style="margin-top:8px">Stock</div>${pzStockHTML()}</div></div>`);
   const g=d.querySelector(".wgrid");
   WARNES.forEach(c=>{const card=el(`<div class="local" style="--c:${c.col}"><div class="toldo"></div><h3>${c.ic} ${c.n}</h3><p class="nota">${c.d}</p><div class="items"></div></div>`);
@@ -82,4 +82,4 @@ function vWarnes(){const m=$("#main"),T=tyPz(),cerrado=!!S.tayaJ;m.innerHTML="";
       r.querySelector("button").onclick=()=>{if(S.tayaJ){toast("Con la noche empezada Warnes está cerrado");return;}if(S.pesos<p){toast("No te alcanza la plata: pasá por el kiosco");return;}
         S.pesos-=p;if(it.stock)T.stock[it.stock]++;else if(it.mejora)T.up[it.mejora]++;else if(it.ahora)it.ahora(T);save();toast(it.stock?`${it.n}: al stock`:`¡Listo! ${it.n}`);vWarnes();};
       card.querySelector(".items").append(r);});g.append(card);});
-  m.append(d);$("#wVol").onclick=()=>render();}
+  m.append(d);$("#wVol").onclick=()=>render();if($("#wAb"))$("#wAb").onclick=()=>tyRetiro(S.tayaJ);}

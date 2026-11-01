@@ -53,7 +53,7 @@ function vTaller(){const m=$("#main"),T=tyPz(),cerrado=!!S.tayaJ;m.innerHTML="";
   const lista=TALLER.filter(x=>x.ok(T));const total=lista.reduce((a,x)=>a+(x.stock&&T.stock[x.stock]>0?12000:x.p),0);
   const d=el(`<div class="taller"><div class="row" style="justify-content:space-between;align-items:center;gap:10px"><div><h2 style="margin:0">El taller</h2><p class="sub" style="margin:2px 0 0">Entre fechas: preparar el auto y arreglar lo que se rompió o volcó. Con tus repuestos pagás solo la mano de obra (${fmt(12000)}).</p></div>
       <button class="btn sec" id="tVol" style="width:auto;flex:0 0 auto">◀ Inicio</button></div>
-    ${cerrado?`<p class="nota" style="color:var(--rojo)">Con la noche empezada el taller está cerrado. Para traer el auto, abandoná la noche desde el box.</p>`:""}
+    ${cerrado?`<div class="row" style="gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap"><p class="nota" style="color:var(--rojo);margin:0;flex:1 1 300px">Tenés la fecha ${S.tayaJ.fecha} empezada: el auto está en el autódromo. Para arreglarlo acá, primero abandoná la noche.</p><button class="btn oro" id="tAb" style="width:auto;flex:0 0 auto">Abandonar la noche y traer el auto</button></div>`:""}
     <div class="tgrid"><div class="copa"><div class="t">Estado del auto</div>${T.chapa?`<p class="nota" style="color:var(--rojo);margin:4px 0">Chasis torcido por el vuelco: no podés largar hasta enderezarlo.</p>`:""}${pzEstadoHTML(null)}<div class="sec-t" style="margin-top:8px">Stock</div>${pzStockHTML()}
       ${lista.length>1&&!cerrado?`<button class="btn oro" id="tTodo" style="margin-top:10px">Dejarlo a punto: todo · ${fmt(total)}</button>`:""}</div>
       <div class="titems"></div></div></div>`);
@@ -61,7 +61,7 @@ function vTaller(){const m=$("#main"),T=tyPz(),cerrado=!!S.tayaJ;m.innerHTML="";
   TALLER.forEach(x=>{const hace=x.ok(T),st=x.stock&&T.stock[x.stock]>0,p=st?12000:x.p;
     const r=el(`<div class="item"><div><b>${x.n}</b><small>${x.d}${st?` · usa 1 de tu stock`:""}</small></div><button class="btn sm ${hace?"oro":"sec"}"${cerrado||!hace?" disabled":""}>${hace?fmt(p):"Está bien"}</button></div>`);
     r.querySelector("button").onclick=()=>{if(!tyTallerHacer(x))return;save();toast("¡Listo! "+x.n);vTaller();};it.append(r);});
-  m.append(d);d.querySelector("#tVol").onclick=render;
+  m.append(d);d.querySelector("#tVol").onclick=render;const ab=d.querySelector("#tAb");if(ab)ab.onclick=()=>tyRetiro(S.tayaJ);
   const tt=d.querySelector("#tTodo");if(tt)tt.onclick=()=>{if(S.pesos<total){toast("No te alcanza la plata: pasá por el kiosco");return;}lista.forEach(x=>tyTallerHacer(x,true));save();toast("Auto a punto para la fecha");vTaller();};}
 function tyTallerHacer(x,sinChk){const T=tyPz();if(S.tayaJ){toast("Con la noche empezada el taller está cerrado");return false;}
   const st=x.stock&&T.stock[x.stock]>0,p=st?12000:x.p;if(S.pesos<p){if(!sinChk)toast("No te alcanza la plata: pasá por el kiosco");return false;}

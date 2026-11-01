@@ -446,7 +446,11 @@ function tyFinResultado(R,yo,pos,pasa,sig){const J=R.J,c=R.c;
   else{const b=el(`<button class="btn oro">${J.res.final?"Ver los resultados de la noche":"Terminar la noche"}</button>`);b.onclick=()=>{closeModal();tyTerminarNoche(J);};o.append(b);}}
 // abandonar: la noche sigue sin vos y el auto va al taller
 function tyRetiro(J){modal(`<h3 class="gan">¿Abandonar la noche?</h3><p>No corrés más esta fecha: te quedan los puntos que ya sumaste. El auto va al taller para repararlo antes de la próxima.</p><div class="opts"><button class="btn oro" id="rtSi">Abandonar e ir al taller</button><button class="btn sec" id="rtNo">Seguir en la noche</button></div>`,"resplaca");
-  $("#rtNo").onclick=()=>{closeModal();tyIrFecha();};$("#rtSi").onclick=()=>{J.retiro=true;J.alTaller=true;closeModal();tyTerminarNoche(J);};}
+  $("#rtNo").onclick=()=>{closeModal();tyIrFecha();};$("#rtSi").onclick=()=>{J.retiro=true;J.alTaller=true;modalLock=false;closeModal();
+    try{tyTerminarNoche(J);}catch(e){console.error(e);tyCerrarForzado(J);}};}
+// si una noche guardada de una versión vieja no se puede cerrar, se cierra igual: la fecha cuenta sin tus puntos
+function tyCerrarForzado(J){const T=tyState();document.querySelectorAll(".typlaca").forEach(x=>x.remove());S.tayaJ=null;if(J&&J.fecha>T.fecha)T.fecha=J.fecha;save();
+  modal(`<h3 class="gan">Noche cerrada</h3><p>Cerramos la fecha ${J?J.fecha:""} y el auto ya está en el taller.</p><div class="opts"><button class="btn oro" id="tyOk">Ir al taller</button></div>`,"resplaca");$("#tyOk").onclick=()=>{closeModal();vTaller();};}
 function tyTerminarNoche(J){const pF=Promise.resolve(); /* sin podio: de las placas se va directo a los resultados */while(tySiguiente(J)){const c=tySiguiente(J);tyGuardar(J,c,tySimular(c.ids,c.laps,c.sup));}
   const msg=tyCerrarNoche(J);S.tayaJ=null;save();
   const fin=J.res.final||[];const placas=tyPlacasPend(J);
@@ -956,9 +960,9 @@ function vTaya(m){const T=tyState();
   m.append(box);
   box.querySelector("#tyGo").onclick=()=>{if(TYR)return;if(T.fecha>=TY_FECHAS){S.taya=null;tyState();render();return;}
     let J=S.tayaJ;if(!J){J=S.tayaJ=tyJornadaNueva();save();}
-    const c=tySiguiente(J);if(!c||J.fuera){tyTerminarNoche(J);return;}
+    let c;try{c=tySiguiente(J);if(!c||J.fuera){tyTerminarNoche(J);return;}}catch(e){console.error(e);tyCerrarForzado(J);return;}
     modal(`<h3 class="gan">Noche de TAYA'xs · Fecha ${J.fecha}</h3><p>${J.ent.length} autos en el autódromo. ${J.carreras?"Te toca":"Arrancás en"} la <b>${esc(c.nom)}</b> (${c.laps} vueltas, ${c.ids.length} autos). Se larga de a 4 por fila. Pasan a las semis los 32 mejores tiempos de las series; el resto va al repechaje. Las gomas aguantan 3 carreras: en el box usás lo que tenés en stock.</p>
-      <p class="nota">Acelerá en verde. En las curvas el auto derrapa: si le das de más se va contra el paredón o hace un trompo; si le das de menos te pasan. ◀ te lleva para adentro, ▶ para afuera (contravolante).</p><div id="tyBoxW"></div><div class="opts"><button class="btn oro" id="tyL">¡A la pista!</button>${J.carreras?'<button class="btn sec" id="tyAb">Abandonar la noche e ir al taller</button>':""}</div>`,"resplaca");if($("#tyAb"))$("#tyAb").onclick=()=>tyRetiro(J);
+      <p class="nota">Acelerá en verde. En las curvas el auto derrapa: si le das de más se va contra el paredón o hace un trompo; si le das de menos te pasan. ◀ te lleva para adentro, ▶ para afuera (contravolante).</p><div id="tyBoxW"></div><div class="opts"><button class="btn oro" id="tyL">¡A la pista!</button><button class="btn sec" id="tyAb">Abandonar la noche e ir al taller</button></div>`,"resplaca");if($("#tyAb"))$("#tyAb").onclick=()=>tyRetiro(J);
     const bL=$("#tyL"),chk=()=>{const v=pzPuedeLargar(J);bL.disabled=!!v;bL.textContent=v||"¡A la pista!";};
     if(J.carreras){const bx=tyBox(J,chk);$("#tyBoxW").append(bx());}chk();
     bL.onclick=()=>{if(pzPuedeLargar(J))return;closeModal();tyLargar(c,J);};};
