@@ -62,7 +62,7 @@ let MASTER=null;
 function volAplicar(){if(AC){if(!MASTER){MASTER=AC.createGain();MASTER.connect(AC.destination);const oc=AudioNode.prototype.connect;
       AudioNode.prototype.connect=function(dst,...r){if(dst===AC.destination&&this!==MASTER)dst=MASTER;return oc.call(this,dst,...r);};}
     MASTER.gain.value=muted?0:VOL.gen;if(typeof NARF!=="undefined"&&NARF.gain)NARF.gain.gain.value=noVoz?0:1.2*VOL.rel;}
-  BGM.volume=Math.min(1,.35*VOL.mus*VOL.gen);if(noMus||muted)BGM.pause();
+  if(typeof musVol==="function")musVol();
   const b=$("#sndBtn");if(b)b.textContent=muted||VOL.gen<.01?"🔇":"🔊";const h=$("#bMute");if(h)h.textContent=muted?"🔇":"🔊";}
 function sndAbrir(forzar){let p=$("#sndPanel");if(p&&!forzar){p.remove();return;}if(p)p.remove();
   const sl=(k,t)=>`<label class="sndrow"><span>${t}</span><input type="range" min="0" max="100" value="${Math.round(VOL[k]*100)}" data-v="${k}"></label>`,ck=(k,t,on)=>`<label class="sndck"><input type="checkbox" data-k="${k}"${on?" checked":""}> ${t}</label>`;
