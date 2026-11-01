@@ -77,7 +77,7 @@ const TY_P={};TY_PIL.forEach(p=>TY_P[p.id]=p);
 function tyState(){let T=S.taya;
   if(!T||!T.pts){T=S.taya={fecha:0,pts:{},po:null,hist:[],up:{motor:0,gomas:0},m:"ma",col:"#f2b632",num:(S.apodo?77:77),champ:null,yaSabe:false};save();}
   if(!T.up)T.up={motor:0,gomas:0};if(T.desg==null)T.desg=0;if(T.habil==null)T.habil=(T.fecha|0)>0;if(T.po&&!T.po.todos)T.po.todos=T.po.vivos.slice();if(!T.ganF)T.ganF={};if(TY_M_VIEJO[T.m])T.m=TY_M_VIEJO[T.m];return T;}
-const tyNombre=id=>id==="yo"?(S.apodo||"Vos"):TY_P[id]?TY_P[id].n:(typeof TYV!=="undefined"&&TYV&&TYV.info[id])?TYV.info[id].apodo:"?";
+const tyNombre=id=>id==="yo"?(S.apodo||"Vos"):(typeof TYV!=="undefined"&&TYV&&TYV.me&&id==="h_"+TYV.me)?(S.apodo||"Vos"):TY_P[id]?TY_P[id].n:(typeof TYV!=="undefined"&&TYV&&TYV.info[id])?TYV.info[id].apodo:"?";
 const tyNum=id=>id==="yo"?tyState().num:TY_P[id]?TY_P[id].num:(TYV&&TYV.info[id]?TYV.info[id].num:0);
 function tyIds(){return ["yo",...TY_PIL.map(p=>p.id)];}
 function tyTabla(){const T=tyState();const ids=T.po&&T.po.vivos?null:tyIds();
@@ -85,7 +85,7 @@ function tyTabla(){const T=tyState();const ids=T.po&&T.po.vivos?null:tyIds();
   if(T.po)rows.sort((a,b)=>(b.vivo-a.vivo)||(b.vivo?b.po-a.po:0)||b.p-a.p);else rows.sort((a,b)=>b.p-a.p);
   return rows;}
 // rating de un piloto para las carreras que no ves
-function tyRating(id){if(id==="yo"){const T=tyState();return .74+T.up.motor*.012+T.up.gomas*.01;}const p=TY_P[id];return p.sk*.75+(p.hp-160)/20*.18+(p.kg===455?.03:0);}
+function tyRating(id){if(id==="yo"){const T=tyState();return .74+T.up.motor*.012+T.up.gomas*.01;}const p=TY_P[id];if(!p)return .74;return p.sk*.75+(p.hp-160)/20*.18+(p.kg===455?.03:0);}
 
 /* ---------- la jornada: series, repechajes, semifinales, prefinal y final ---------- */
 // REGLAMENTO de la noche (128 autos de 140 inscriptos):
@@ -106,10 +106,10 @@ function tyJornadaNueva(sinYo){const T=tyState(),nB=sinYo?128:127;
   return J;}
 const tyTSim=(id,laps)=>laps*15.6*(1.06-tyRating(id)*.08);
 function tySimular(ids,laps,sup){ // resultado de una carrera que no se ve (vos nunca: si no la corrés, no estás)
-  const r=ids.map(id=>({id,t:tyTSim(id,laps)+(Math.random()-.5)*laps*.55,dnf:id==="yo"||Math.random()<.035}));
+  const r=ids.map(id=>({id,t:tyTSim(id,laps)+(Math.random()-.5)*laps*.55,dnf:id==="yo"||String(id).startsWith("h_")||Math.random()<.035}));
   r.sort((a,b)=>(a.dnf-b.dnf)||a.t-b.t);const out=r.map(x=>({id:x.id,dnf:x.dnf,t:x.dnf?null:x.t}));
   // prefinal y final: por cada abandono entra un suplente desde el fondo
-  if(sup){const L=sup.filter(id=>id!=="yo"&&!ids.includes(id));let n=out.filter(x=>x.dnf).length,tMax=Math.max(0,...out.filter(x=>!x.dnf).map(x=>x.t));
+  if(sup){const L=sup.filter(id=>id!=="yo"&&!String(id).startsWith("h_")&&!ids.includes(id));let n=out.filter(x=>x.dnf).length,tMax=Math.max(0,...out.filter(x=>!x.dnf).map(x=>x.t));
     for(let i=0;i<n&&i<L.length;i++){tMax+=.4+Math.random()*1.2;out.splice(out.findIndex(x=>x.dnf),0,{id:L[i],dnf:false,t:tMax,sup:true});}}
   return out;}
 const tyOrdT=L=>L.slice().sort((a,b)=>(a.dnf-b.dnf)||((a.t??999)-(b.t??999)));
@@ -138,7 +138,7 @@ function tySiguiente(J){
     R.final=tySimular(J.final,LP.final,supFin);}
   return null;}
 // qué te toca después de cada carrera
-function tyPasaTxt(J,c){const id="yo";
+function tyPasaTxt(J,c,id){id=id||"yo";
   if(c.k==="serie"){const i=(J.clasS||[]).indexOf(id);return i>=0?`¡Clasificaste a la semifinal con el ${i+1}º mejor tiempo de las 16 series!`:"No entraste entre los 32 mejores tiempos: vas al repechaje.";}
   if(c.k==="repe"){const i=(J.clasR||[]).indexOf(id);return i>=0?`¡Pasaste a la semifinal con el ${i+1}º tiempo de los repechajes! Largás de 3ª fila.`:"No te alcanzó: pasaban los 8 mejores tiempos de los repechajes.";}
   if(c.k==="semi"){const i=(J.rkSemi||[]).indexOf(id);if(J.final&&J.final.includes(id)&&i>=10)return J.supNota||"¡Entrás a la final como suplente!";
@@ -1005,11 +1005,11 @@ function tyVivoCodigo(){const A="ABCDEFGHJKLMNPQRSTUVWXYZ";let c="";for(let i=0;
 function tyVivoPedirCodigo(tit,cb){modal(`<h3>${tit}</h3><p>Escribí el código de 4 letras que te pasó tu amigo.</p><input id="tyvC" maxlength="4" autocapitalize="characters" style="width:100%;font-size:28px;letter-spacing:8px;text-align:center;padding:10px;border-radius:12px;border:2px solid var(--linea);background:var(--chapa);color:var(--crema);text-transform:uppercase"><div class="opts"><button class="btn oro" id="tyvOk">Entrar</button><button class="btn sec" id="tyvNo">Cancelar</button></div>`);
   const ok=()=>{const v=($("#tyvC").value||"").toUpperCase().replace(/[^A-Z]/g,"");if(v.length!==4){toast("El código tiene 4 letras");return;}closeModal();cb(v);};$("#tyvOk").onclick=ok;$("#tyvNo").onclick=closeModal;$("#tyvC").addEventListener("keydown",e=>{if(e.key==="Enter")ok();});setTimeout(()=>{try{$("#tyvC").focus();}catch(e){}},50);}
 function tyVivoPres(extra){if(!TYV||!TYV.room)return;const T=tyState();
-  return TYV.room.presence({apodo:(S.apodo||"Piloto").slice(0,16),num:T.num,m:T.m,col:T.col,av:tyVivoAvance(),uid:NET.uid||null,sala:1,...(extra||{})}).catch(()=>{});}
-async function tyVivoEntrar(modo,code){if(TYR)return;if(!NET.room||!NET.room.join){toast("Jugar con amigos necesita conexión");return;}
+  return TYV.room.presence({apodo:(S.apodo||"Piloto").slice(0,16),num:T.num,m:T.m,col:T.col,av:tyVivoAvance(),uid:NET.uid||null,sala:1,crea:TYV.crea?1:0,...(extra||{})}).catch(()=>{});}
+async function tyVivoEntrar(modo,code){if(TYR)return;if(typeof netInit==="function")await netInit();if(!NET.room||!NET.room.join){toast("Jugar con amigos necesita conexión");return;}
   if(!S.apodo){toast("Primero elegí tu apodo");return;}
-  modalLock=true;modal(`<h3>${modo==="fecha"?"Campeonato con amigos":"Desafío con amigos"}</h3><p>Conectando a la sala ${esc(code)}…</p>`);
-  let room;try{room=await NET.room.join("tyv_"+(modo==="fecha"?"f_":"r_")+code);}catch(e){modalLock=false;closeModal();toast("No se pudo conectar");return;}
+  modalLock=true;modal(`<h3>${modo==="fecha"?"Campeonato con amigos":modo==="mano"?"Mano a mano":"Desafío con amigos"}</h3><p>Conectando a la sala ${esc(code)}…</p>`);
+  let room;try{room=await NET.room.join("ntx_"+modo+"_"+code);}catch(e){modalLock=false;closeModal();toast("No se pudo conectar");return;}
   TYV={room,code,modo,peers:[],st:{},me:null,go:false,info:{},tabla:null};tyVivoPres();
   if(modo==="fecha")tyVivoTablaLeer().then(()=>{if(TYV&&!TYV.go)tyVivoSala();});
   room.onPeers(ch=>{if(!TYV||TYV.room!==room)return;TYV.peers=ch.peers.filter(p=>p.presence&&p.presence.apodo);
@@ -1020,15 +1020,16 @@ async function tyVivoEntrar(modo,code){if(TYR)return;if(!NET.room||!NET.room.joi
   tyVivoSala();}
 function tyVivoOrden(ps){const pts=uid=>TYV.tabla&&TYV.tabla.t&&uid&&TYV.tabla.t[uid]?TYV.tabla.t[uid].pts|0:0;
   return ps.slice().sort((a,b)=>TYV.modo==="fecha"?(pts(b.presence.uid)-pts(a.presence.uid))||((b.presence.av|0)-(a.presence.av|0)):((b.presence.av|0)-(a.presence.av|0)));}
-function tyVivoSala(){if(!TYV||TYV.go)return;const ps=tyVivoOrden(TYV.peers.filter(p=>p.presence.sala&&!p.presence.en)).slice(0,TYV_MAX);
+function tyVivoSala(){if(!TYV||TYV.go)return;const mano=TYV.modo==="mano",ps=tyVivoOrden(TYV.peers.filter(p=>p.presence.sala&&!p.presence.en)).slice(0,mano?2:TYV_MAX);
   const host=ps.map(p=>p.peer).sort()[0],soy=host&&host===TYV.me,fecha=TYV.modo==="fecha";
   const tab=fecha&&TYV.tabla&&TYV.tabla.t?Object.values(TYV.tabla.t).sort((a,b)=>b.pts-a.pts):[];
-  modalLock=true;modal(`<h3>${fecha?"Campeonato con amigos":"Desafío con amigos"} · código <span style="color:var(--oro);letter-spacing:3px">${esc(TYV.code)}</span></h3>
-    <p>Pasales el código a tus amigos: entran desde TAYA'xs → <b>Con amigos</b>. Hasta ${TYV_MAX} pilotos, carrera del largo de una final (${TY.LAPS.final} vueltas). ${fecha?"La grilla sale de la tabla del campeonato.":"La grilla sale del avance de cada uno en el juego: el que más avanzó larga adelante."}</p>
+  modalLock=true;modal(`<h3>${fecha?"Campeonato con amigos":mano?"Mano a mano":"Desafío con amigos"} · código <span style="color:var(--oro);letter-spacing:3px">${esc(TYV.code)}</span></h3>
+    <p>${mano?`Pasale el código a tu rival: entra desde <b>Multijugador → Mano a mano</b>. Ustedes dos solos, ${TY.LAPS.final} vueltas, largada de a dos.</p><p style="display:none">`:""}Pasales el código a tus amigos: entran desde <b>Multijugador</b>. Hasta ${TYV_MAX} pilotos, carrera del largo de una final (${TY.LAPS.final} vueltas). ${fecha?"La grilla sale de la tabla del campeonato.":"La grilla sale del avance de cada uno en el juego: el que más avanzó larga adelante."}</p>
     <table class="ovtab"><tr><th>Larga</th><th>Piloto</th><th>Chasis</th></tr>${ps.map((p,i)=>`<tr${p.sameTab?' class="yo"':''}><td>${i+1}º</td><td>#${p.presence.num|0} ${esc(p.presence.apodo)}${p.peer===host?" · organiza":""}</td><td>${esc(TY_HUMAN[p.presence.m]||"")}</td></tr>`).join("")}</table>
     ${fecha?`<div class="sec-t">Tabla del campeonato <span>${TYV.tabla?(TYV.tabla.n|0)+" fechas":"…"}</span></div>${tab.length?`<table class="ovtab"><tr><th>Pos</th><th>Piloto</th><th>Pts</th></tr>${tab.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.n)}</td><td>${r.pts}</td></tr>`).join("")}</table>`:`<p class="nota">Todavía no se corrió ninguna fecha.</p>`}`:""}
     <p class="nota">${soy?"Vos organizás: largá cuando estén todos.":"Esperá a que el que organiza largue la carrera."}</p><div class="opts" id="tyvo"></div>`,"resplaca");
-  const o=$("#tyvo");if(soy){const b=el(`<button class="btn oro">🏁 Largar con máquinas (${ps.length} + ${Math.max(0,TYV_MAX-ps.length)} = ${TYV_MAX})</button>`);b.onclick=()=>tyVivoLargar(ps,true);o.append(b);
+  const o=$("#tyvo");if(soy&&mano){const m=el(`<button class="btn oro">🤝 Largar el mano a mano</button>`);m.disabled=ps.length<2;if(ps.length<2)m.textContent="Esperando a tu rival…";m.onclick=()=>tyVivoLargar(ps,false);o.append(m);}
+  else if(soy){const b=el(`<button class="btn oro">🏁 Largar con máquinas (${ps.length} + ${Math.max(0,TYV_MAX-ps.length)} = ${TYV_MAX})</button>`);b.onclick=()=>tyVivoLargar(ps,true);o.append(b);
     const m=el(`<button class="btn">🤝 Mano a mano (solo los ${ps.length} conectado${ps.length===1?"":"s"})</button>`);m.disabled=ps.length<2;m.title=ps.length<2?"Hacen falta al menos 2 pilotos conectados":"";m.onclick=()=>tyVivoLargar(ps,false);o.append(m);}
   const x=el(`<button class="btn sec">Salir de la sala</button>`);x.onclick=()=>{tyVivoSalir();modalLock=false;closeModal();render();};o.append(x);}
 function tyVivoLargar(ps,maq){if(!TYV)return;const usados=new Set(),grid=[];
@@ -1041,7 +1042,7 @@ function tyVivoLargar(ps,maq){if(!TYV)return;const usados=new Set(),grid=[];
 function tyVivoArrancar(d){TYV.go=true;TYV.host=d.host;TYV.d=d;modalLock=false;closeModal();
   const ids=[];d.grid.forEach(g=>{if(g.peer===TYV.me){ids.push("yo");TYV.miNum=g.num;return;}const id="p_"+g.peer;TYV.info[id]={apodo:g.apodo,num:g.num,m:g.m,col:g.col,uid:g.uid};ids.push(id);});
   (d.bots||[]).forEach(b=>ids.push(b.id));
-  const c={k:"vivo",n:1,nom:d.modo==="fecha"?`Fecha ${d.fecha} con amigos`:"Desafío con amigos",ids,laps:d.laps||TY.LAPS.final,vivo:d};
+  const c={k:"vivo",n:1,nom:d.modo==="fecha"?`Fecha ${d.fecha} con amigos`:d.modo==="mano"?"Mano a mano":"Desafío con amigos",ids,laps:d.laps||TY.LAPS.final,vivo:d};
   const J={vivo:true,yaPresento:true,res:{},fuera:false};tyVivoPres({en:1,dist:0,d:0,v:0});tyLargar(c,J);}
 // quién maneja cada auto: el mío acá; los de los amigos llegan por la red; las máquinas, del que organiza
 function tyVivoMarcar(cars,d){const host=d.host===TYV.me;let k=0;

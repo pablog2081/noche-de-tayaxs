@@ -12,6 +12,7 @@ function vInicio(m){const T=tyPz(),reg=T.fecha<TY_REG,po=T.po;
       <button class="tile t-ent" id="iEnt"><i>🧂</i><b>Entrenamiento</b><span>Solo en el salitral, sin gastos${T.mejorSal?` · récord ${T.mejorSal.toFixed(2)} s`:""}</span></button>
       <button class="tile t-war" id="iWar"><i>🔧</i><b>Warnes</b><span>Gomería, rectificadora, repuestos y tren delantero${enNoche?" · cerrado durante la noche":""}</span></button>
       <button class="tile t-tal" id="iTal"><i>🛠️</i><b>Taller</b><span>${enNoche?"Cerrado durante la noche":T.chapa?"¡El auto volcó: hay que enderezarlo!":"Preparar y reparar el auto entre fechas"}</span></button>
+      <button class="tile t-multi" id="iMul"><i>👥</i><b>Multijugador</b><span>Mano a mano, jornada única y campeonatos en vivo</span></button>
       <button class="tile t-kio" id="iKio"><i>🛒</i><b>Kiosco</b><span>Plata para el juego</span></button>
       <button class="tile t-tab" id="iTab"><i>🏆</i><b>Campeonato</b><span>${T.po?"Playoff y Copa de Plata":"La tabla de los 140 pilotos"}</span></button>
     </section>
@@ -49,6 +50,7 @@ function vInicio(m){const T=tyPz(),reg=T.fecha<TY_REG,po=T.po;
   d.querySelector("#iWar").onclick=()=>vWarnes();
   d.querySelector("#iKio").onclick=()=>vKiosco();
   d.querySelector("#iTal").onclick=()=>vTaller();
+  d.querySelector("#iMul").onclick=()=>vMulti();
   d.querySelector("#iTab").onclick=()=>vCampeonato();}
 // la fecha: usa la misma lógica de siempre (arma la noche, el box entre carreras y larga)
 function tyIrFecha(){if(typeof TYR!=="undefined"&&TYR)return;const tmp=document.createElement("div");_vTayaBase(tmp);const b=tmp.querySelector("#tyGo");if(b)b.click();}
