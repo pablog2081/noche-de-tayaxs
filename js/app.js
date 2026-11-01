@@ -1,13 +1,9 @@
 /* Noche de TAYA'xs — pantalla principal (PC) */
-const BUILD="v6";
+const BUILD="v7";
 function hud(){$("#hPesos").textContent=fmt(S.pesos);$("#hApodo").textContent=S.apodo?"Piloto: "+S.apodo:"";$("#bMute").textContent=muted?"🔇":"🔊";}
 function render(){hud();const m=$("#main");m.innerHTML="";
   if(!S.apodo){m.append(bienvenida());return;}
-  const col=el(`<div class="pcgrid"><div class="pcizq"></div><div class="pcder"></div></div>`);m.append(col);
-  vTaya(col.querySelector(".pcizq"));
-  // en PC: a la izquierda el campeonato y tu midget, a la derecha la tabla
-  const izq=col.querySelector(".pcizq"),der=col.querySelector(".pcder"),hijos=[...izq.children];
-  hijos.slice(3).forEach(c=>der.append(c));}
+  vInicio(m);}
 function bienvenida(){const d=el(`<div class="copa bienv"><h2>Noche de TAYA'xs</h2>
   <p class="sub">Midgets en el óvalo de tierra de Bahía Blanca. 140 pilotos, series, repechajes, semis, prefinal y la Gran Final, todas las noches. Autos sin caja: se doblan derrapando y el acelerador es el volante.</p>
   <label class="nota">¿Cómo te dicen en el ambiente?</label>
@@ -25,7 +21,7 @@ function sonidoMenu(){const row=(k,t,on)=>`<label class="aopt" style="display:fl
   document.querySelectorAll("input[data-k]").forEach(i=>i.onchange=()=>{const v=!i.checked;({all:()=>muted=v,mus:()=>noMus=v,voz:()=>noVoz=v,fx:()=>noFx=v})[i.dataset.k]();
     try{localStorage.setItem(KEY+".mute",muted?"1":"0");localStorage.setItem(KEY+".nomus",noMus?"1":"0");localStorage.setItem(KEY+".novoz",noVoz?"1":"0");localStorage.setItem(KEY+".nofx",noFx?"1":"0");}catch(e){}bgm();hud();});
   $("#aOk").onclick=closeModal;}
-$("#bMute").onclick=sonidoMenu;$("#bPad").onclick=controlesMenu;$("#bGraf").onclick=graficosMenu;
+$("#bPad").onclick=controlesMenu;$("#bGraf").onclick=graficosMenu;
 $("#bBuild").textContent=BUILD;
 // el 3D arranca apenas abre, así la primera carrera no espera
 init3D();

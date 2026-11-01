@@ -202,7 +202,7 @@ function tyGarage(J,onClose){const T=tyState();if(!TY3.mod[T.m]){toast("Llevando
   const cam=new TH.PerspectiveCamera(50,1,.1,600);
   const ov=el(`<div id="tyGar"><canvas id="tyGarC"></canvas><div class="tgtop"><b>🔧 Box · ${esc(TY_HUMAN[T.m]||"")} #${T.num}</b><span id="tgMsg">Revisá las gomas y el motor antes de la próxima carrera</span></div><div class="tgpanel" id="tgPanel"></div><button class="btn oro tgvolver" id="tgVolver">Volver</button></div>`);
   document.body.append(ov);let fin=false,t0=performance.now(),anim=null;
-  const accion=k=>{anim={k,t:performance.now()};$("#tgMsg").textContent=k==="gomas"?"Cambiando las gomas… ¡pistola de impacto!":"Haciendo el service: bujías, filtro y carburador";tySonido("roce",.35);
+  const accion=k=>{anim={k,t:performance.now()};$("#tgMsg").textContent=k==="gomas"?"Cambiando las gomas… ¡pistola de impacto!":"Manos a la obra: cambiando los repuestos";tySonido("roce",.35);
     if(k==="gomas"){nuevas.visible=true;setTimeout(()=>{if(!fin){tySonido("roce",.35);$("#tgMsg").textContent="Gomas nuevas puestas. Listo para largar";}},1600);}else setTimeout(()=>{if(!fin)$("#tgMsg").textContent="Service hecho: el motor respira mejor";},1600);};
   const panel=()=>{const p=$("#tgPanel");p.innerHTML="";const bx=tyBox(J,()=>{},accion);p.append(bx());};panel();
   const cerrar=()=>{if(fin)return;fin=true;E.sc.remove(G);ov.remove();onClose&&onClose();};$("#tgVolver").onclick=cerrar;
@@ -218,10 +218,10 @@ let TYR=null;
 const TYH=1/120; // paso de física del midget
 function tyAuto(id,i,grid){const T=tyState();let p=id==="yo"?null:TY_P[id];if(!p&&TYV&&TYV.info[id]){const f=TYV.info[id];p={n:f.apodo,num:f.num,m:TY_M.includes(f.m)?f.m:"ma",col:f.col||"#ccc",spon:f.apodo,sk:.8,hp:168,kg:455};}
   const J=S.tayaJ,uso=J?J.gUso|0:0;
-  const hp=id==="yo"?(168+T.up.motor*3)*tyMotorK():p.hp,kg=id==="yo"?455:p.kg,mu=1.5*(id==="yo"?(1+T.up.gomas*.012)*tyGomaK(uso):1)*(1+(p?(p.sk-.75)*.05:0));
+  const PZ=id==="yo"?tyPz(T).est:null,hp=id==="yo"?(168+T.up.motor*3)*tyMotorK():p.hp,kg=id==="yo"?455:p.kg,mu=1.5*(id==="yo"?(1+T.up.gomas*.012)*tyGomaK(uso)*(.82+.18*PZ.amort/100)*(J&&J.blandas?1.045:1):1)*(1+(p?(p.sk-.75)*.05:0));
   return {id,yo:id==="yo",n:id==="yo"?tyNombre(id):p.n,num:id==="yo"?((TYV&&TYV.go&&TYV.miNum)||tyNum(id)):p.num,m:id==="yo"?T.m:p.m,col:id==="yo"?T.col:p.col,spon:id==="yo"?(S.apodo||""):p.spon,
     hp,kg:kg+70,mu,sk:id==="yo"?1:p.sk,s:0,d:0,vl:0,v:0,th:0,sa:0,pitch:0,lap:0,dist:0,fin:null,out:null,dmg:0,
-    dT:0,ai:{err:0,errT:0,pase:0,linea:-2.2+Math.random()*1.4},grid:i,g:null,lastS:0};}
+    dT:0,ai:{err:0,errT:0,pase:0,linea:-2.2+Math.random()*1.4},grid:i,g:null,lastS:0,tren:PZ?PZ.tren/100:1,jaula:PZ?PZ.jaula/100:1};}
 function tyLargar(c,J){audioInit();tyBanderaBlanca(false);narStopF();narLoadF();
   const ids=c.ids.slice();
   // grilla: en las series por sorteo; después por cómo vienen clasificados (el orden de la lista)
@@ -291,13 +291,13 @@ function tyPaso(R){const dt=TYH;R.t+=dt;const g=9.81;
     // derrape: el sobrante de potencia en la curva saca la cola y empuja el auto hacia afuera
     let u=e.yo&&e.fin===null?tyVolanteYo(R,e,c):tyVolanteIA(R,e);
     const libre=Math.max(0,1-uso);
-    const aCtrl=u*Math.min(6,(libre*.9+.25)*cap*.55);
+    const aCtrl=u*Math.min(6,(libre*.9+.25)*cap*.55)*(.55+.45*(e.tren??1));
     e.vl+=(aCtrl+exc*15*(c?1:0))*dt;e.vl*=1-2.2*dt;
     // la cola sale por exceso de potencia (sobreviraje); si entrás pasado, el auto se abre (sin trompo)
     const excLat=Math.max(0,aLat/cap-1),excPow=e.th>.35?exc*e.th:0,asist=e.yo&&(S.tyVol||"auto")==="auto"?.7:1;
     const saT=c?(.12+excLat*.35+excPow*2.1*asist+(u<0&&exc>0?-u*exc*.8:0)-(u>0?u*.45:0)):0;
     e.sa+=(Math.max(-.2,saT)-e.sa)*Math.min(1,dt*(saT>e.sa?2.6:4));
-    if(e.sa>1.12&&!e.out){tyChoque(R,e,"trompo");continue;}
+    if(e.sa>1.12*(.86+.14*(e.jaula??1))&&!e.out){tyChoque(R,e,"trompo");continue;}
     if(e.yo&&e.sa>.72&&R.t-(R.avisoSa||-9)>2.5){R.avisoSa=R.t;tyMsg("¡Se te va la cola! Levantá el pie o contravolanteá ▶","#ff8f9c");vib(40);}
     if(!c&&e.sa>.15){e.vl-=e.v*Math.sin(e.sa-.1)*.9*dt;e.v=Math.max(0,e.v-(e.sa-.15)*4*dt);} /* tijera: sale de la curva cruzado → frena un poco y se mete para adentro */
     e.d+=e.vl*dt;
@@ -306,9 +306,9 @@ function tyPaso(R){const dt=TYH;R.t+=dt;const g=9.81;
     if(e.d>dW&&R.c.entreno){e.d=dW;e.vl=-Math.abs(e.vl)*.3;e.v*=1-.6*dt;if(e.yo&&R.t-(R.avisoRoce||-9)>1.5){R.avisoRoce=R.t;tyMsg("¡Contra las cubiertas! Abrite para adentro ◀","#ffb4bd");}}
     else if(e.d>dW){const imp=Math.max(0,e.vl),cola=e.sa>.22;e.d=dW;e.vl=-Math.abs(e.vl)*.25;
       if(imp>1.35&&!cola){tyChoque(R,e,"pared",imp);continue;}
-      if(cola&&!e.gomaR){e.gomaR=true;e.v*=.8;e.sa*=.6;e.dmg+=25;tySonido("pared",.55);if(e.yo){vib([60,40,90]);tyMsg("¡Tocaste el paredón con la cola! Rompiste la goma trasera","#ff8f9c");R.J.gomaRota=true;}
+      if(cola&&!e.gomaR){e.gomaR=true;if(e.yo&&!R.c.vivo)pzGolpe("goma",0);e.v*=.8;e.sa*=.6;e.dmg+=25;tySonido("pared",.55);if(e.yo){vib([60,40,90]);tyMsg("¡Tocaste el paredón con la cola! Rompiste la goma trasera","#ff8f9c");R.J.gomaRota=true;}
         if(R.t-(R.narChoqueT||-9)>3){R.narChoqueT=R.t;narraF("pared",{a:e});}}
-      else if(imp>.25){e.v*=1-imp*.06;e.dmg+=imp*14;tySonido("roce",.4);if(e.yo){vib(30);tyMsg(e.gomaR?"¡Seguís pegándole al paredón con la goma rota!":"¡Rozaste el paredón!","#ffb4bd");}}
+      else if(imp>.25){e.v*=1-imp*.06;e.dmg+=imp*14;tySonido("roce",.4);if(e.yo&&!R.c.vivo)pzGolpe("roce",imp);if(e.yo){vib(30);tyMsg(e.gomaR?"¡Seguís pegándole al paredón con la goma rota!":"¡Rozaste el paredón!","#ffb4bd");}}
       else{e.v*=1-.5*dt;e.dmg+=3*dt;if(e.yo&&R.t-(R.avisoRoce||-9)>1.5){R.avisoRoce=R.t;tySonido("roce",.3);tyMsg("¡Vas raspando el paredón! Abrite para adentro ◀","#ffb4bd");}}
       if(e.dmg>=100){tyChoque(R,e,"pared",imp);continue;}}
     if(e.d<TY.IN-1.6){e.d=TY.IN-1.6;e.vl=Math.max(0,e.vl);}
@@ -357,7 +357,7 @@ function tyVolanteYo(R,e,c){const man=(S.tyVol||"auto")==="manual";
   if(lado&&!R.steer){const sg=Math.sign(lado.d-e.d)||1;return Math.max(-1,Math.min(1,-sg*.7-e.vl*.9));}
   return Math.max(-1,Math.min(1,(e.dT-e.d)*.75-e.vl*.9));}
 // choques: rueda con rueda, paredón, trompo o golpe de atrás → el auto queda afuera y se para la carrera
-function tyChoque(R,e,tipo,imp,otro){if(e.out)return;if(R.c.entreno){e.v*=.25;e.sa=0;e.vl=0;e.th=0;if(e.yo){tyMsg(tipo==="trompo"?"¡Trompo! Levantá el pie en la curva":"¡Golpe! Seguí practicando","#ff8f9c");vib(80);}R.entTrompos=(R.entTrompos|0)+1;return;}e.out=tipo;e.outT=R.t;e.dmg=100;e.spinW=(tipo==="rueda"?7:tipo==="trompo"?5:3)*(Math.random()<.5?-1:1);
+function tyChoque(R,e,tipo,imp,otro){if(e.out)return;if(e.yo&&!R.c.entreno&&!R.c.vivo)pzGolpe((tipo==="rueda"||(tipo==="pared"&&imp>2.3))?"vuelco":tipo,imp||0);if(R.c.entreno){e.v*=.25;e.sa=0;e.vl=0;e.th=0;if(e.yo){tyMsg(tipo==="trompo"?"¡Trompo! Levantá el pie en la curva":"¡Golpe! Seguí practicando","#ff8f9c");vib(80);}R.entTrompos=(R.entTrompos|0)+1;return;}e.out=tipo;e.outT=R.t;e.dmg=100;e.spinW=(tipo==="rueda"?7:tipo==="trompo"?5:3)*(Math.random()<.5?-1:1);
   e.vuelco=tipo==="rueda"||(tipo==="pared"&&imp>2.3);e.vl=0;e.v*=tipo==="pared"?.25:.55;
   tySonido(e.vuelco?"vuelco":tipo==="pared"?"pared":"toque",1);R.choques++;
   if(e.yo){vib([90,60,140]);tyMsg(tipo==="rueda"?"¡Se tocaron rueda con rueda! Volaste":tipo==="pared"?"¡Al paredón! Se terminó tu noche":tipo==="trompo"?"¡Trompo! Te pasaste de acelerador en la curva":"¡Chocaste!","#ff8f9c");R.J.danio=true;}
@@ -373,7 +373,7 @@ function tyCompletar(R){if(!R.green){tyRelargar(R);R.green=true;R.tGreen=R.tGree
 function tyFinCarrera(R){if(TYR!==R)return;const pos=tyPosiciones(R),J=R.J,c=R.c;
   const res=pos.map(e=>({id:e.id,dnf:!!e.out,t:e.fin}));tyGuardar(J,c,res);
   const yo=res.findIndex(x=>x.id==="yo");if(R.yoFuera)J.fuera=true;
-  {const T=tyState();J.gUso=J.gomaRota?TY_GOMA_MAX:(J.gUso|0)+1;J.gomaRota=false;J.serv=false;J.carreras=(J.carreras|0)+1;T.desg=Math.min(1,(T.desg||0)+c.laps*.0045);save();}
+  {pzFinCarrera(R);const T=tyState();J.gUso=J.gomaRota?TY_GOMA_MAX:(J.gUso|0)+1;J.gomaRota=false;J.serv=false;J.carreras=(J.carreras|0)+1;T.desg=Math.min(1,(T.desg||0)+c.laps*.0045);save();}
   if(pos[0])narraF("bandera",{a:pos[0]});
   TYR=null;tyBanderaBlanca(false);tyUI(false);tyAudioStop();
   const pasa=c.k==="serie"?yo<2?"¡Pasaste directo a la semifinal!":yo<4?"Vas al repechaje: el ganador pasa a la prefinal.":"No te alcanzó para seguir esta noche.":
@@ -394,9 +394,9 @@ function tyFinResultado(R,yo,pos,pasa,sig){const J=R.J,c=R.c;
     <table class="ovtab"><tr><th>Pos</th><th>Piloto</th><th>Tiempo</th></tr>${tabla}</table><div id="tyBoxW"></div><div class="opts" id="tyOpts"></div>`,"resplaca");
   const o=$("#tyOpts");
   if(sig&&!J.fuera){const b=el(`<button class="btn oro">Largar ${esc(sig.nom)}</button>`);
-    const chk=()=>{const v=(J.gUso|0)>=TY_GOMA_MAX;b.disabled=v;b.textContent=v?"Cambiá las gomas para largar":"Largar "+sig.nom;};
+    const chk=()=>{const v=pzPuedeLargar(J);b.disabled=!!v;b.textContent=v||"Largar "+sig.nom;};
     const bx=tyBox(J,chk);$("#tyBoxW").append(bx());chk();
-    b.onclick=()=>{if((J.gUso|0)>=TY_GOMA_MAX)return;closeModal();tyLargar(sig,J);};o.append(b);}
+    b.onclick=()=>{if(pzPuedeLargar(J))return;closeModal();tyLargar(sig,J);};o.append(b);}
   else{const b=el(`<button class="btn oro">${J.res.final?"Ver los resultados de la noche":"Terminar la noche"}</button>`);b.onclick=()=>{closeModal();tyTerminarNoche(J);};o.append(b);}}
 function tyTerminarNoche(J){const pF=Promise.resolve(); /* sin podio: de las placas se va directo a los resultados */while(tySiguiente(J)){const c=tySiguiente(J);tyGuardar(J,c,tySimular(c.ids,c.laps));}
   const msg=tyCerrarNoche(J);S.tayaJ=null;save();
@@ -778,10 +778,10 @@ function tyAudioStart(){if(!AC||muted||noFx)return;tyAudioStop();
   if(SND.buf.chico)go();else (loadSounds()||Promise.resolve()).then(go);}
 function tyAudioSet(R){if(!AC||!TYA.yo)return;const t=AC.currentTime,P=R.P;
   const rpm=1400+Math.min(1,P.v/42)*6600*(P.th>.1?1:.85)+(R.green?0:P.th*3000);
-  TYA.yo.s.playbackRate.setTargetAtTime(Math.max(.35,Math.min(3,rpm/5200)),t,.04);TYA.yo.f.frequency.setTargetAtTime(P.th>.3?3800:1400,t,.05);TYA.yo.g.gain.setTargetAtTime(P.out?0:(.45+P.th*.55)*TYA.yo.vol,t,.06);
+  TYA.yo.s.playbackRate.setTargetAtTime(Math.max(.35,Math.min(3,rpm/5200)),t,.04);TYA.yo.f.frequency.setTargetAtTime(P.th>.3?3800:1400,t,.05);TYA.yo.g.gain.setTargetAtTime(P.out?0:(.45+P.th*.55)*TYA.yo.vol*VOL.mot,t,.06);
   // los demás: cuantos más cerca de la cámara, más fuerte
   const vivos=R.cars.filter(e=>!e.yo&&!e.out),cerca=vivos.filter(e=>Math.abs(e.dist-P.dist)<40).length,vm=vivos.length?vivos.reduce((a,e)=>a+e.v,0)/vivos.length:0;
-  TYA.pack.forEach((p,i)=>{if(!p)return;p.s.playbackRate.setTargetAtTime(Math.max(.4,(.55+vm/42*1.25)*(1+i*.07)),t,.1);p.g.gain.setTargetAtTime(p.vol*(R.green?1:.5)*Math.min(2.2,.6+cerca*.35),t,.15);});
+  TYA.pack.forEach((p,i)=>{if(!p)return;p.s.playbackRate.setTargetAtTime(Math.max(.4,(.55+vm/42*1.25)*(1+i*.07)),t,.1);p.g.gain.setTargetAtTime(p.vol*VOL.mot*(R.green?1:.5)*Math.min(2.2,.6+cerca*.35),t,.15);});
   if(TYA.hinchada)TYA.hinchada.g.gain.setTargetAtTime(R.c.entreno?0:R.roja?.09:R.done?.12:.045,t,.3);}
 function tyAudioStop(){["yo","hinchada"].forEach(k=>{const a=TYA[k];if(a){try{a.g.gain.setTargetAtTime(0,AC.currentTime,.05);const s=a.s;setTimeout(()=>{try{s.stop();}catch(e){}},300);}catch(e){}}TYA[k]=null;});
   (TYA.pack||[]).forEach(a=>{if(a){try{a.g.gain.setTargetAtTime(0,AC.currentTime,.05);const s=a.s;setTimeout(()=>{try{s.stop();}catch(e){}},300);}catch(e){}}});TYA.pack=[];}
@@ -820,7 +820,7 @@ function narraF(k,p){p=p||{};if(typeof TYR!=="undefined"&&TYR&&TYR.c.entreno)ret
 function narLoadF(){if(NARF.buf||NARF.loading||!AC)return;NARF.loading=true;
   Promise.all([fetch("taya/relato.json?v=70").then(r=>r.json()),fetch("taya/relato.mp3?v=70").then(r=>r.arrayBuffer())]).then(([m,ab])=>{NARF.map=m;return new Promise((res,rej)=>AC.decodeAudioData(ab,res,rej));}).then(b=>{NARF.buf=b;narPlayF();}).catch(()=>{NARF.loading=false;});}
 function narPlayF(){if(NARF.busy||!NARF.q.length||!NARF.buf||!AC)return;const it=NARF.q.shift();if(!it.prio&&performance.now()-it.t>2500){narPlayF();return;}const cl=it.clips.filter(c=>c&&NARF.map[c]);if(!cl.length){narPlayF();return;}
-  NARF.busy=true;if(!NARF.gain){NARF.gain=AC.createGain();NARF.gain.gain.value=1.2;NARF.gain.connect(AC.destination);}
+  NARF.busy=true;if(!NARF.gain){NARF.gain=AC.createGain();NARF.gain.gain.value=1.2*VOL.rel;NARF.gain.connect(AC.destination);}
   let t=AC.currentTime+.03;const srcs=[];cl.forEach((c,i)=>{const [o,d]=NARF.map[c];const s=AC.createBufferSource(),g=AC.createGain();s.buffer=NARF.buf;
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1,t+.02);g.gain.setValueAtTime(1,t+Math.max(.03,d-.04));g.gain.linearRampToValueAtTime(0,t+d);
     s.connect(g);g.connect(NARF.gain);s.start(t,o,d);srcs.push(s);t+=d+(i<cl.length-1?.05:0);});
@@ -910,9 +910,9 @@ function vTaya(m){const T=tyState();
     const c=tySiguiente(J);if(!c||J.fuera){tyTerminarNoche(J);return;}
     modal(`<h3 class="gan">Noche de TAYA'xs · Fecha ${J.fecha}</h3><p>${J.ent.length} autos en el autódromo. ${J.carreras?"Te toca":"Arrancás en"} la <b>${esc(c.nom)}</b> (${c.laps} vueltas, ${c.ids.length} autos). Se larga de a 4 por fila. Los 2 primeros pasan directo a la semifinal; 3º y 4º van al repechaje. Las gomas aguantan 3 carreras: entre carrera y carrera podés cambiarlas, mejorarlas y hacer el service.</p>
       <p class="nota">Acelerá en verde. En las curvas el auto derrapa: si le das de más se va contra el paredón o hace un trompo; si le das de menos te pasan. ◀ te lleva para adentro, ▶ para afuera (contravolante).</p><div id="tyBoxW"></div><div class="opts"><button class="btn oro" id="tyL">¡A la pista!</button></div>`,"resplaca");
-    const bL=$("#tyL"),chk=()=>{const v=(J.gUso|0)>=TY_GOMA_MAX;bL.disabled=v;bL.textContent=v?"Cambiá las gomas para largar":"¡A la pista!";};
+    const bL=$("#tyL"),chk=()=>{const v=pzPuedeLargar(J);bL.disabled=!!v;bL.textContent=v||"¡A la pista!";};
     if(J.carreras){const bx=tyBox(J,chk);$("#tyBoxW").append(bx());}chk();
-    bL.onclick=()=>{if((J.gUso|0)>=TY_GOMA_MAX)return;closeModal();tyLargar(c,J);};};
+    bL.onclick=()=>{if(pzPuedeLargar(J))return;closeModal();tyLargar(c,J);};};
   tyAmigosCard(m);
   // tu midget
   const enNoche=!!S.tayaJ;

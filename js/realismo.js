@@ -154,7 +154,7 @@ function tyVitrina(cont){const T=tyState(),cv=el(`<canvas class="tyvit" title="A
   init3D().then(ok=>{if(!ok)return;const TH=T3.TH;
     if(!VIT.sc){const sc=new TH.Scene();sc.background=new TH.Color(0x0b0e16);try{sc.environment=tyEntorno(TH);}catch(e){}
       const piso=new TH.Mesh(new TH.CircleGeometry(4.2,64),new TH.MeshStandardMaterial({color:0x2a2622,roughness:.9}));piso.rotation.x=-Math.PI/2;piso.receiveShadow=true;sc.add(piso);
-      const key=new TH.SpotLight(0xfff0d8,2.2,30,Math.PI/5,.6,1.5);key.position.set(4,7,3);key.castShadow=true;key.shadow.mapSize.set(1024,1024);sc.add(key,key.target);
+      const key=new TH.SpotLight(0xfff0d8,1.3,30,Math.PI/5,.6,1.5);key.position.set(4,7,3);key.castShadow=true;key.shadow.mapSize.set(1024,1024);sc.add(key,key.target);
       const rim=new TH.DirectionalLight(0x9fb8ff,.6);rim.position.set(-5,3,-4);sc.add(rim);sc.add(new TH.HemisphereLight(0x8090b0,0x201810,.35));
       VIT.sc=sc;VIT.cam=new TH.PerspectiveCamera(32,1,.1,50);}
     const k=T.m+T.col+T.num;
