@@ -35,5 +35,5 @@ function gfxRender(sc,cam,w,h){const ren=T3.ren,TH=T3.TH;
   if(!GFX.comp||GFX.w!==w||GFX.h!==h||GFX.q!==gfxCalidad()){if(GFX.comp){GFX.comp.renderTarget1.dispose();GFX.comp.renderTarget2.dispose();}gfxArmar(w,h);}
   if(!GFX.comp){ren.toneMapping=TH.ACESFilmicToneMapping;ren.setRenderTarget(null);ren.render(sc,cam);return;}
   const tm=ren.toneMapping,oe=ren.outputEncoding;ren.toneMapping=TH.NoToneMapping;
-  GFX.rp.scene=sc;GFX.rp.camera=cam;GFX.grade.uniforms.time.value=(performance.now()-GFX.t0)/1000%100;
+  GFX.rp.scene=sc;GFX.rp.camera=cam;{const u=GFX.grade.uniforms,ud=sc.userData||{};u.expo.value=ud.expo??.85;u.vig.value=ud.vig??.42;if(GFX.bloom)GFX.bloom.strength=ud.bloom??(GFX.q==="media"?.45:.62);}GFX.grade.uniforms.time.value=(performance.now()-GFX.t0)/1000%100;
   if(window.__gr)for(const k in window.__gr)GFX.grade.uniforms[k].value=window.__gr[k];GFX.comp.render();ren.toneMapping=tm;ren.outputEncoding=oe;}

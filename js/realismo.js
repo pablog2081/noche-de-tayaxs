@@ -146,3 +146,24 @@ function tyTorresReales(E){const TH=T3.TH;if(!E.heads)return;const lamp=new TH.M
     h.visible=false;h.parent.add(g);});}
 const _tyRealismoBase=tyRealismo;
 tyRealismo=function(E){_tyRealismoBase(E);try{tyTorresReales(E);}catch(e){console.warn("torres",e);}};
+
+/* ---------- vitrina: el midget elegido girando en 3D, con su ploteo y su número ---------- */
+const VIT={raf:0,sc:null,cam:null,car:null,key:"",ang:.6,drag:null};
+function tyVitrina(cont){const T=tyState(),cv=el(`<canvas class="tyvit" title="Arrastrá para girarlo"></canvas>`);cont.prepend(cv);
+  cancelAnimationFrame(VIT.raf);
+  init3D().then(ok=>{if(!ok)return;const TH=T3.TH;
+    if(!VIT.sc){const sc=new TH.Scene();sc.background=new TH.Color(0x0b0e16);try{sc.environment=tyEntorno(TH);}catch(e){}
+      const piso=new TH.Mesh(new TH.CircleGeometry(4.2,64),new TH.MeshStandardMaterial({color:0x2a2622,roughness:.9}));piso.rotation.x=-Math.PI/2;piso.receiveShadow=true;sc.add(piso);
+      const key=new TH.SpotLight(0xfff0d8,2.2,30,Math.PI/5,.6,1.5);key.position.set(4,7,3);key.castShadow=true;key.shadow.mapSize.set(1024,1024);sc.add(key,key.target);
+      const rim=new TH.DirectionalLight(0x9fb8ff,.6);rim.position.set(-5,3,-4);sc.add(rim);sc.add(new TH.HemisphereLight(0x8090b0,0x201810,.35));
+      VIT.sc=sc;VIT.cam=new TH.PerspectiveCamera(32,1,.1,50);}
+    const k=T.m+T.col+T.num;
+    const poner=()=>{if(VIT.car){VIT.sc.remove(VIT.car);VIT.car=null;}const o=tyAutoObj({id:"yo",m:T.m,col:T.col,num:T.num,spon:S.apodo||"",n:S.apodo});if(o){o.traverse(q=>{if(q.isMesh)q.castShadow=true;});VIT.sc.add(o);VIT.car=o;VIT.key=k;}};
+    tyModelo(T.m).then(()=>{if(VIT.key!==k||!VIT.car)poner();});
+    cv.addEventListener("pointerdown",e=>{VIT.drag=e.clientX;cv.setPointerCapture(e.pointerId);});cv.addEventListener("pointermove",e=>{if(VIT.drag!=null){VIT.ang-=(e.clientX-VIT.drag)*.01;VIT.drag=e.clientX;}});cv.addEventListener("pointerup",()=>VIT.drag=null);
+    const loop=()=>{if(!cv.isConnected||(typeof TYR!=="undefined"&&TYR))return;VIT.raf=requestAnimationFrame(loop);
+      const w=Math.round(cv.clientWidth*Math.min(2,devicePixelRatio||1)),h=Math.round(cv.clientHeight*Math.min(2,devicePixelRatio||1));if(!w||!h)return;if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+      if(VIT.drag==null)VIT.ang+=.004;const r=6.2;VIT.cam.aspect=w/h;VIT.cam.position.set(Math.cos(VIT.ang)*r,2.1,Math.sin(VIT.ang)*r);VIT.cam.lookAt(0,.55,0);VIT.cam.updateProjectionMatrix();
+      const ren=T3.ren;ren.setSize(w,h,false);ren.setClearColor(0x0b0e16,1);ren.toneMapping=TH.ACESFilmicToneMapping;ren.render(VIT.sc,VIT.cam);const x=cv.getContext("2d");x.drawImage(ren.domElement,0,0,w,h);};loop();});}
+const _vTayaBase=vTaya;
+vTaya=function(m){_vTayaBase(m);try{const card=[...m.querySelectorAll(".copa")].find(c=>/Tu midget/.test(c.textContent));if(card)tyVitrina(card);}catch(e){console.warn("vitrina",e);}};
