@@ -1,0 +1,40 @@
+/* Noche de TAYA'xs — pantalla de PC */
+body.pc{overflow:auto;background:radial-gradient(1200px 600px at 70% -10%,#24314f 0%,transparent 60%),radial-gradient(900px 500px at 10% 0%,#3a2a18 0%,transparent 55%),var(--noche);min-height:100%}
+#gl{position:fixed;inset:0;width:100vw;height:100vh;display:none;z-index:40;background:#05070d}
+body.tyrun #gl{display:block}
+body.tyrun{overflow:hidden}
+#top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:18px;padding:12px 28px;background:linear-gradient(180deg,rgba(8,10,16,.96),rgba(8,10,16,.82));border-bottom:1px solid var(--linea);backdrop-filter:blur(6px)}
+#top .marca b{display:block;font:400 30px/1 var(--f-display);color:var(--oro);letter-spacing:.5px;text-shadow:0 2px 0 #000}
+#top .marca span{font:600 13px var(--f-ui);letter-spacing:2px;text-transform:uppercase;color:var(--crema-2)}
+#top .plata{margin-left:auto;text-align:right}
+#top .plata span{display:block;font:600 14px var(--f-ui);color:var(--crema-2)}
+#top .plata b{font:800 26px var(--f-ui);color:var(--crema)}
+#top .acc{display:flex;gap:8px}
+#top .acc button{width:46px;height:46px;border-radius:12px;background:var(--chapa);border:1px solid var(--linea);font-size:22px}
+#top .acc button:hover{border-color:var(--oro)}
+#main{max-width:1280px;margin:0 auto;padding:24px 28px 40px}
+#pie{text-align:center;color:var(--crema-2);font:600 13px var(--f-ui);padding:0 0 24px;opacity:.6}
+.pcgrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:22px;align-items:start}
+.pcgrid .copa{margin:0 0 18px}
+.pcgrid h2{font:400 40px/1.05 var(--f-display);color:var(--oro);margin:0 0 6px}
+.pcgrid .sub{font-size:19px;max-width:62ch}
+.bienv{max-width:620px;margin:60px auto}
+.bienv h2{font:400 48px/1 var(--f-display);color:var(--oro);margin:0 0 10px}
+#modal .box{max-width:620px}
+.btn{cursor:pointer}
+.btn:hover:not(:disabled){filter:brightness(1.12)}
+@media (max-width:900px){.pcgrid{grid-template-columns:1fr}#top{padding:10px 16px}#main{padding:16px}}
+
+/* carrera en PC: el 3D va en #gl (con post-proceso) y arriba el HUD transparente */
+body.pc #tyRace{background:transparent}
+body.pc #tyScene{position:absolute;inset:0;width:100%;height:100%}
+body.pc #tyRace .tyctrl{display:none}
+body.pc #tyRace .tyhud{position:absolute;left:24px;right:auto;bottom:24px;width:340px;background:rgba(8,10,16,.62);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px 14px;backdrop-filter:blur(4px)}
+body.pc #tyRace .kb{position:absolute;right:20px;bottom:16px;left:auto;max-width:560px;text-align:right;opacity:.75;font-size:14px}
+body.pc #tyRace .tymsg{bottom:120px;font-size:24px}
+body.pc #tyRace .tyside{top:auto;bottom:70px;right:20px;flex-direction:row}
+body.pc #tyRace .typos b{font-size:34px}
+#tyPausa{position:absolute;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;background:rgba(5,7,13,.62);backdrop-filter:blur(4px)}
+#tyPausa[hidden]{display:none}
+#tyPausa .pbox{display:flex;flex-direction:column;gap:10px;min-width:320px;padding:22px;background:linear-gradient(160deg,#1f2a44,#0e121c);border:2px solid var(--oro);border-radius:16px}
+#tyPausa h2{font:400 34px var(--f-display);color:var(--oro);margin:0 0 6px;text-align:center}
