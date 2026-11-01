@@ -493,7 +493,7 @@ function tyBuild(){const TH=T3.TH,sc=new TH.Scene(),E={sc,flags:[]};const L=TY.L
   const torres=[[-TY.S/2-20,TY.R+22],[TY.S/2+20,TY.R+22],[-TY.S/2-20,-TY.R-22],[TY.S/2+20,-TY.R-22],[0,TY.R+26],[0,-TY.R-26]];
   const postM=std({color:0x777777,roughness:.6});
   torres.forEach(([x,z],i)=>{const p=new TH.Mesh(new TH.CylinderGeometry(.35,.5,26,8),postM);p.position.set(x,13,z);sc.add(p);
-    const head=new TH.Mesh(new TH.BoxGeometry(5,2.2,.8),new TH.MeshBasicMaterial({color:0xfff6dc}));head.position.set(x,26.5,z);head.lookAt(0,0,0);sc.add(head);
+    const head=new TH.Mesh(new TH.BoxGeometry(5,2.2,.8),new TH.MeshBasicMaterial({color:0xfff6dc}));head.position.set(x,26.5,z);head.lookAt(0,0,0);sc.add(head);(E.heads=E.heads||[]).push(head);
     if(i<4){const sp=new TH.SpotLight(0xfff1d6,.62,200,Math.PI/3.6,.65,2);sp.position.set(x,26,z);sp.target.position.set(x*.25,0,z*.25);sp.shadow.mapSize.set(2048,2048);sp.shadow.bias=-.0004;sp.shadow.camera.near=8;sp.shadow.camera.far=160;sc.add(sp,sp.target);(E.spots=E.spots||[]).push(sp);}
     const glow=new TH.Sprite(new TH.SpriteMaterial({map:dTex(64,64,(c,w,h)=>{const g=c.createRadialGradient(32,32,2,32,32,32);g.addColorStop(0,"rgba(255,248,220,1)");g.addColorStop(1,"rgba(255,240,200,0)");c.fillStyle=g;c.fillRect(0,0,w,h);}),transparent:true,depthWrite:false,fog:false}));glow.scale.set(18,18,1);glow.position.set(x,26.5,z);sc.add(glow);});
   sc.add(new TH.AmbientLight(0xffe7c4,.08));
@@ -501,7 +501,7 @@ function tyBuild(){const TH=T3.TH,sc=new TH.Scene(),E={sc,flags:[]};const L=TY.L
   {const st=[];for(let i=0;i<900;i++){const a=Math.random()*Math.PI*2,e2=Math.random()*1.2+.08,r=900;st.push(Math.cos(a)*Math.cos(e2)*r,Math.sin(e2)*r,Math.sin(a)*Math.cos(e2)*r);}
     const g=new TH.BufferGeometry();g.setAttribute("position",new TH.Float32BufferAttribute(st,3));sc.add(new TH.Points(g,new TH.PointsMaterial({color:0xffffff,size:1.6,sizeAttenuation:false,fog:false})));}
   // pasto alrededor e infield
-  const pasto=new TH.Mesh(new TH.PlaneGeometry(1400,1400),std({color:0x101a0c,roughness:1}));pasto.rotation.x=-Math.PI/2;pasto.position.y=-.06;sc.add(pasto);
+  const pasto=new TH.Mesh(new TH.PlaneGeometry(1400,1400),std({color:0x101a0c,roughness:1}));E.pasto=pasto;pasto.rotation.x=-Math.PI/2;pasto.position.y=-.06;sc.add(pasto);
   const strip=(d0,d1,mat,dy,step)=>{const pts=[],uv=[],idx=[];step=step||2;let k=0;
     for(let s=0;s<=L+.01;s+=step){for(const d of [d0,d1]){const p=tyPose(s,d);pts.push(p.x,tyY(s,d)+(dy||0),p.z);uv.push(s/10,(d-d0)/10);}
       if(k){const a=(k-1)*2;idx.push(a,a+1,a+2,a+1,a+3,a+2);}k++;}
@@ -510,12 +510,12 @@ function tyBuild(){const TH=T3.TH,sc=new TH.Scene(),E={sc,flags:[]};const L=TY.L
   // tierra de verdad (foto de una pista de arcilla mojada); mientras carga, la dibujada
   const tierra=tyTierraTex();tierra.wrapS=tierra.wrapT=TH.RepeatWrapping;const pisoM=std({map:tierra,color:0xb08a6a,roughness:1});
   new TH.TextureLoader().load("taya/tierra.webp",t=>{t.encoding=TH.sRGBEncoding;t.wrapS=t.wrapT=TH.RepeatWrapping;t.anisotropy=8;pisoM.map=t;pisoM.color.setHex(0x9a7a66);pisoM.needsUpdate=true;});
-  strip(-TY.W/2-.2,TY.W/2,pisoM,.02).receiveShadow=true;
+  E.pisoM=pisoM;E.piso=strip(-TY.W/2-.2,TY.W/2,pisoM,.02);E.piso.receiveShadow=true;
   // huella oscura (la línea de carrera mojada y apisonada)
   strip(-4.2,-.6,std({color:0x3b2818,roughness:.95,transparent:true,opacity:.55}),.035);
   // infield: pasto con cubiertas pintadas en el borde
   {const sh=new TH.Shape();const pts=[];for(let s=0;s<L;s+=3){const p=tyPose(s,-TY.W/2-.3);pts.push(new TH.Vector2(p.x,-p.z));}sh.setFromPoints(pts);
-    const inf=new TH.Mesh(new TH.ShapeGeometry(sh),std({color:0x0f1a0b,roughness:1}));inf.rotation.x=-Math.PI/2;inf.position.y=.01;sc.add(inf);
+    const inf=new TH.Mesh(new TH.ShapeGeometry(sh),std({color:0x0f1a0b,roughness:1}));E.infield=inf;inf.rotation.x=-Math.PI/2;inf.position.y=.01;sc.add(inf);
     const gomaG=new TH.TorusGeometry(.42,.18,6,12),gomaB=new TH.MeshStandardMaterial({color:0x151515,roughness:.9}),gomaW=new TH.MeshStandardMaterial({color:0xe8e8e0,roughness:.8});
     let n=0;for(let s=0;s<L;s+=1.15){const p=tyPose(s,-TY.W/2-.55);const t=new TH.Mesh(gomaG,(n++>>2)%2?gomaB:gomaW);t.position.set(p.x,.2,p.z);t.rotation.x=Math.PI/2;sc.add(t);}}
   // paredón de hormigón y alambrado
@@ -528,13 +528,13 @@ function tyBuild(){const TH=T3.TH,sc=new TH.Scene(),E={sc,flags:[]};const L=TY.L
     sc.add(new TH.Mesh(g,new TH.MeshBasicMaterial({map:fence,transparent:true,depthWrite:false,side:TH.DoubleSide})));}
   // carteles de publicidad sobre el paredón
   const ad=t=>dTex(512,96,(x,w,h)=>{x.fillStyle=t[1];x.fillRect(0,0,w,h);x.fillStyle=t[2];x.font="bold 54px 'Barlow Condensed',Arial Narrow,sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText(t[0],w/2,h/2+3);});
-  const ADS=[["TAYA'xs","#111","#f2c230"],["LUBRICANTES PAMPA","#c0392b","#fff"],["¡VAMOS POCHÓN!","#f2c230","#111"],["CUBIERTAS TORNADO","#111","#f4d03f"],["RADIO FIERRERA","#f39c12","#111"],["CORRALÓN BAHÍA","#1f5fa8","#fff"],["ALDEA ROMANA","#1e8a4c","#fff"],["FRIGORÍFICO ROMANA","#7a1d1d","#fff"]];
+  const ADS=[["TAYA'xs","#111","#f2c230"],["LUBRICANTES PAMPA","#c0392b","#fff"],["¡VAMOS POCHÓN!","#f2c230","#111"],["CUBIERTAS TORNADO","#111","#f4d03f"],["RADIO FIERRERA","#f39c12","#111"],["CORRALÓN BAHÍA","#1f5fa8","#fff"],["ALDEA ROMANA","#1e8a4c","#fff"],["FRIGORÍFICO ROMANA","#7a1d1d","#fff"],["GOMERÍA RUTA 3","#fff","#c0392b"],["ELECTRO SUR","#0fb5ae","#fff"],["LA TRADICIÓN","#111","#fff"],["TRANSPORTE BAHÍA","#e46b1c","#fff"],["0KM AUTOS","#fff","#1f5fa8"],["PINTURERÍA COLÓN","#6c2a8a","#fff"],["FERRETERÍA WHITE","#f2c230","#111"],["REPUESTOS PUERTO","#1e8a4c","#fff"]];
   // cada cartel se dobla siguiendo el paredón (en las curvas también), pegado a la pared de los dos lados
   const cartelPared=(s0,len,d,mat,flip)=>{const pts=[],uv=[],idx=[],N=12;for(let k=0;k<=N;k++){const ss=s0+len*k/N,q=tyPose(ss,d),y=tyY(ss,TY.W/2+.1);pts.push(q.x,y+.14,q.z,q.x,y+1.19,q.z);const u=flip?k/N:1-k/N;uv.push(u,0,u,1);
       if(k){const a=(k-1)*2;if(flip)idx.push(a,a+1,a+2,a+1,a+3,a+2);else idx.push(a,a+2,a+1,a+1,a+2,a+3);}}
     const g=new TH.BufferGeometry();g.setAttribute("position",new TH.Float32BufferAttribute(pts,3));g.setAttribute("uv",new TH.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const m=new TH.Mesh(g,mat);sc.add(m);return m;};
-  for(let i=0;i<24;i++){const s=i*L/24+5;if(tyEnPuerta(s-6)||tyEnPuerta(s+6)||tyEnPuerta(s))continue;const t=ADS[i%ADS.length],mat=new TH.MeshBasicMaterial({map:ad(t),side:TH.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2});
-    cartelPared(s-5.5,11,TY.W/2+.065,mat,false);cartelPared(s-5.5,11,TY.W/2+.135,mat,true);}
+  for(let i=0;i<48;i++){const s=i*L/48+4;if(tyEnPuerta(s-4.2)||tyEnPuerta(s+4.2)||tyEnPuerta(s))continue;const t=ADS[i%ADS.length],mat=new TH.MeshBasicMaterial({map:ad(t),side:TH.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2});
+    cartelPared(s-4.1,8.2,TY.W/2+.065,mat,false);cartelPared(s-4.1,8.2,TY.W/2+.135,mat,true);}
   // línea de llegada
   {const chk=dTex(256,32,(x,w,h)=>{for(let i=0;i<16;i++)for(let j=0;j<2;j++){x.fillStyle=(i+j)%2?"#111":"#f4f4f4";x.fillRect(i*16,j*16,16,16);}});
     const fl=new TH.Mesh(new TH.PlaneGeometry(1.2,TY.W),new TH.MeshBasicMaterial({map:chk}));fl.rotation.x=-Math.PI/2;fl.rotation.z=Math.PI/2;fl.position.set(0,.06,TY.R);sc.add(fl);}
