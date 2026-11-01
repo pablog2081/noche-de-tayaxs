@@ -60,3 +60,13 @@ function padCalibrar(){const snap=()=>{const g=navigator.getGamepads()[PAD.idx];
       if(g.k==="btn")gas={btn:g.i};else if(g.k==="axis")gas={axis:g.i,min:g.v0,max:g.v1};else{toast("No detecté el acelerador");controlesMenu();return;}
       PAD.cfg={id:a1.id,std:false,steer,gas,dead:.04,sens:(PAD.cfg&&PAD.cfg.sens)||1};try{localStorage.setItem(PAD_KEY,JSON.stringify(PAD.cfg));}catch(x){}
       toast("Listo: volante y acelerador calibrados");controlesMenu();});});}
+// teclado: el volante no salta de golpe, gira suave hacia el lado de la flecha (como un volante de verdad)
+const KBS={l:false,r:false,v:0,t:performance.now(),act:false};
+window.addEventListener("keydown",e=>{if(tk("izq",e.code))KBS.l=true;if(tk("der",e.code))KBS.r=true;});
+window.addEventListener("keyup",e=>{if(tk("izq",e.code))KBS.l=false;if(tk("der",e.code))KBS.r=false;});
+window.addEventListener("blur",()=>{KBS.l=KBS.r=false;});
+(function kbLoop(now){requestAnimationFrame(kbLoop);const dt=Math.min(.05,(now-KBS.t)/1000);KBS.t=now;
+  if(typeof TYR==="undefined"||!TYR||PAD.steerAct)return;const tg=(KBS.r?1:0)-(KBS.l?1:0);
+  if(!tg&&!KBS.act){KBS.v=0;return;}
+  KBS.v+=(tg-KBS.v)*Math.min(1,dt*(tg?7:12));if(Math.abs(KBS.v)<.02&&!tg){KBS.v=0;KBS.act=false;TYR.steer=0;return;}
+  KBS.act=true;TYR.steer=KBS.v;})(performance.now());

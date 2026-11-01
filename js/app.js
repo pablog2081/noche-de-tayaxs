@@ -1,5 +1,5 @@
 /* Noche de TAYA'xs — pantalla principal (PC) */
-const BUILD="v5";
+const BUILD="v6";
 function hud(){$("#hPesos").textContent=fmt(S.pesos);$("#hApodo").textContent=S.apodo?"Piloto: "+S.apodo:"";$("#bMute").textContent=muted?"🔇":"🔊";}
 function render(){hud();const m=$("#main");m.innerHTML="";
   if(!S.apodo){m.append(bienvenida());return;}
@@ -30,3 +30,24 @@ $("#bBuild").textContent=BUILD;
 // el 3D arranca apenas abre, así la primera carrera no espera
 init3D();
 render();
+
+/* ---------- KIOSCO: plata para el juego (compras simuladas en esta versión de prueba) ---------- */
+const KIO_PESOS=[{t:"Bolsita",v:300000,p:"$ 1.999"},{t:"Sobre",v:1000000,p:"$ 4.999",d:true},{t:"Valija",v:3000000,p:"$ 9.999"},{t:"Caja fuerte",v:10000000,p:"$ 24.999"}];
+function vKiosco(){const m=$("#main");m.innerHTML="";hud();const cd=Math.max(0,Math.ceil(((S.adAt||0)+120000-Date.now())/1000));
+  const d=el(`<div class="kio"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">El kiosco</h2><button class="btn sec" id="kVol" style="width:auto;flex:0 0 auto">◀ Volver</button></div>
+    <p class="sub">Plata para el juego: chasis nuevo, carburación, cubiertas, gomas y service.</p><div class="stack"></div>
+    <p class="nota">Versión de prueba: las compras y los avisos están simulados y no cobran nada.</p>
+    <button class="btn sec" id="kReset" style="margin-top:14px">Empezar de cero</button></div>`);
+  const st=d.querySelector(".stack");
+  const ad=el(`<div class="pack"><div class="big">▶</div><div><div class="t">Mirá un aviso</div><div class="s">Ganás ${fmt(25000)} gratis. Uno cada 2 minutos.</div></div><button class="btn verde" ${cd?"disabled":""}>${cd?cd+" s":"Ver"}</button></div>`);
+  ad.querySelector("button").onclick=()=>kioAviso(()=>{S.pesos+=25000;S.adAt=Date.now();save();toast("+"+fmt(25000));vKiosco();});st.append(ad);
+  KIO_PESOS.forEach(p=>{const r=el(`<div class="pack ${p.d?"dest":""}"><div class="big">$</div><div><div class="t">${p.t}</div><div class="s">${fmt(p.v)} de plata para el juego</div></div><button class="btn oro">${p.p}</button></div>`);
+    r.querySelector("button").onclick=()=>kioComprar(`${p.t} (${fmt(p.v)})`,p.p,()=>{S.pesos+=p.v;});st.append(r);});
+  m.append(d);$("#kVol").onclick=render;
+  $("#kReset").onclick=()=>{modal(`<h3>¿Borrar la partida?</h3><p>Perdés la plata, el campeonato y las mejoras. Tu apodo queda.</p><div class="opts"><button class="btn" id="ys">Borrar</button><button class="btn sec" id="ns">Cancelar</button></div>`);
+    $("#ys").onclick=()=>{const ap=S.apodo,vz=S.tyVoz;S=fresh();S.apodo=ap;S.tyVoz=vz;save();closeModal();render();};$("#ns").onclick=closeModal;};}
+function kioComprar(nom,precio,fn){modal(`<h3>${esc(nom)}</h3><p>En la versión final acá se paga ${precio}. En esta versión de prueba la compra es simulada y no se cobra nada.</p><div class="opts"><button class="btn oro" id="ys">Comprar (simulado)</button><button class="btn sec" id="ns">Cancelar</button></div>`);
+  $("#ys").onclick=()=>{fn();save();closeModal();toast("¡Listo! Ya tenés la plata");vKiosco();};$("#ns").onclick=closeModal;}
+function kioAviso(done){let n=3;modal(`<div class="adfake" id="adtx">Aviso<br>${n}</div><p>En la versión final acá va un video con premio.</p>`);
+  const it=setInterval(()=>{n--;const t=$("#adtx");if(t)t.innerHTML=`Aviso<br>${n}`;if(n<=0){clearInterval(it);closeModal();done();}},1000);}
+$("#bKio").onclick=()=>{if(typeof TYR!=="undefined"&&TYR)return;vKiosco();};

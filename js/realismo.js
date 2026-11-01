@@ -167,3 +167,18 @@ function tyVitrina(cont){const T=tyState(),cv=el(`<canvas class="tyvit" title="A
       const ren=T3.ren;ren.setSize(w,h,false);ren.setClearColor(0x0b0e16,1);ren.toneMapping=TH.ACESFilmicToneMapping;ren.render(VIT.sc,VIT.cam);const x=cv.getContext("2d");x.drawImage(ren.domElement,0,0,w,h);};loop();});}
 const _vTayaBase=vTaya;
 vTaya=function(m){_vTayaBase(m);try{const card=[...m.querySelectorAll(".copa")].find(c=>/Tu midget/.test(c.textContent));if(card)tyVitrina(card);}catch(e){console.warn("vitrina",e);}};
+
+/* ---------- tierra regada que brilla, cielo con el resplandor de la ciudad ---------- */
+function tyNocheReal(E){const TH=T3.TH,sc=E.sc;
+  // la huella de carrera: tierra húmeda y apisonada que refleja las torres
+  if(E.huella){const m=E.huella.material;m.roughness=.32;m.metalness=0;m.envMapIntensity=1.4;m.color.setHex(0x2e1f13);m.opacity=.62;
+    const h=dTex(512,128,(x,w,hh)=>{x.fillStyle="#fff";x.fillRect(0,0,w,hh);for(let i=0;i<500;i++){x.fillStyle=`rgba(0,0,0,${Math.random()*.35})`;x.fillRect(Math.random()*w,Math.random()*hh,2+Math.random()*30,1+Math.random()*2);}},[1,1]);
+    h.encoding=TH.LinearEncoding;h.wrapS=h.wrapT=TH.RepeatWrapping;m.roughnessMap=h;m.needsUpdate=true;}
+  if(E.pisoM){E.pisoM.roughness=.86;E.pisoM.envMapIntensity=.55;}
+  // resplandor anaranjado de Bahía Blanca en el horizonte y bruma alrededor de las luces
+  const cielo=new TH.Mesh(new TH.SphereGeometry(950,32,16),new TH.ShaderMaterial({side:TH.BackSide,depthWrite:false,fog:false,transparent:true,
+    vertexShader:"varying vec3 p;void main(){p=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",
+    fragmentShader:"varying vec3 p;void main(){float h=p.y;float g=exp(-max(h,0.)*9.)*(.6+.4*sin(atan(p.z,p.x)*2.+1.));vec3 c=vec3(.55,.28,.1)*g*.55+vec3(.02,.03,.07)*smoothstep(0.,.6,h);gl_FragColor=vec4(c,clamp(g*.7+.15,0.,1.));}"}));
+  cielo.renderOrder=-1;sc.add(cielo);}
+const _tyRealismoBase2=tyRealismo;
+tyRealismo=function(E){_tyRealismoBase2(E);try{tyNocheReal(E);}catch(e){console.warn("noche",e);}};
