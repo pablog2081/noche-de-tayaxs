@@ -1,11 +1,11 @@
 /* Noche de TAYA'xs — pantalla principal (PC) */
-const BUILD="v8";
+const BUILD="v9";
 function hud(){$("#hPesos").textContent=fmt(S.pesos);$("#hApodo").textContent=S.apodo?"Piloto: "+S.apodo:"";$("#bMute").textContent=muted?"🔇":"🔊";}
 function render(){hud();const m=$("#main");m.innerHTML="";
   if(!S.apodo){m.append(bienvenida());return;}
   vInicio(m);}
 function bienvenida(){const d=el(`<div class="copa bienv"><h2>Noche de TAYA'xs</h2>
-  <p class="sub">Midgets en el óvalo de tierra de Bahía Blanca. 140 pilotos, series, repechajes, semis, prefinal y la Gran Final, todas las noches. Autos sin caja: se doblan derrapando y el acelerador es el volante.</p>
+  <p class="sub">Midgets en el óvalo de tierra de Bahía Blanca. 140 pilotos: series de 8, repechajes, semis de 10, prefinal y la Gran Final de 12. Los pilotos nuevos primero practican en el salitral y corren el tiempo de suficiencia. Autos sin caja: se doblan derrapando y el acelerador es el volante.</p>
   <label class="nota">¿Cómo te dicen en el ambiente?</label>
   <input id="bApodo" maxlength="16" placeholder="Tu apodo" style="font:700 22px var(--f-ui);padding:10px;border-radius:10px;border:1px solid var(--linea);background:var(--asfalto);color:var(--crema);width:100%;margin:6px 0 12px">
   <button class="btn oro" id="bEmp">Entrar al autódromo</button></div>`);

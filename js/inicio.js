@@ -3,24 +3,27 @@
 function vInicio(m){const T=tyPz(),reg=T.fecha<TY_REG,po=T.po;
   const fase=T.fecha>=TY_FECHAS?"Campeonato terminado":reg?`Fecha ${T.fecha+1} de ${TY_FECHAS} · temporada regular`:`Fecha ${T.fecha+1} de ${TY_FECHAS} · playoff`;
   const tab=tyTabla(),yoI=tab.findIndex(r=>r.id==="yo"),enNoche=!!S.tayaJ;
-  const goTxt=T.fecha>=TY_FECHAS?"Nueva temporada":enNoche?"Seguir la noche":"Correr la fecha "+(T.fecha+1);
+  const goTxt=T.fecha>=TY_FECHAS?"Nueva temporada":enNoche?"Seguir la noche":!T.habil?"Habilitación":"Correr la fecha "+(T.fecha+1);
+  const goSub=enNoche?"La noche está empezada: solo podés usar lo que tenés en stock":!T.habil?"Piloto nuevo: práctica en el salitral y tiempo de suficiencia":T.chapa?"Primero arreglá el auto en el taller":"Series, repechajes, semis, prefinal y la Gran Final";
   const d=el(`<div class="inicio">
     <section class="hero"><div><h1>Noche de TAYA'xs</h1><p>Midgets en el óvalo de tierra de Bahía Blanca. ${esc(fase)} · vas ${yoI+1}º de ${tab.length}.</p></div></section>
     <section class="tiles">
-      <button class="tile t-fecha" id="iFecha"><i>🏁</i><b>${goTxt}</b><span>${enNoche?"La noche está empezada: solo podés usar lo que tenés en stock":"Series, repechajes, semis, prefinal y la Gran Final"}</span></button>
+      <button class="tile t-fecha" id="iFecha"><i>🏁</i><b>${goTxt}</b><span>${goSub}</span></button>
       <button class="tile t-ent" id="iEnt"><i>🧂</i><b>Entrenamiento</b><span>Solo en el salitral, sin gastos${T.mejorSal?` · récord ${T.mejorSal.toFixed(2)} s`:""}</span></button>
       <button class="tile t-war" id="iWar"><i>🔧</i><b>Warnes</b><span>Gomería, rectificadora, repuestos y tren delantero${enNoche?" · cerrado durante la noche":""}</span></button>
+      <button class="tile t-tal" id="iTal"><i>🛠️</i><b>Taller</b><span>${enNoche?"Cerrado durante la noche":T.chapa?"¡El auto volcó: hay que enderezarlo!":"Preparar y reparar el auto entre fechas"}</span></button>
       <button class="tile t-kio" id="iKio"><i>🛒</i><b>Kiosco</b><span>Plata para el juego</span></button>
-      <button class="tile t-tab" id="iTab"><i>🏆</i><b>Campeonato</b><span>La tabla de los 140 pilotos</span></button>
+      <button class="tile t-tab" id="iTab"><i>🏆</i><b>Campeonato</b><span>${T.po?"Playoff y Copa de Plata":"La tabla de los 140 pilotos"}</span></button>
     </section>
-    <section class="ini2"><div class="copa imid"><div class="t">Tu midget</div></div><div class="copa iaju"><div class="t">Ajustes</div></div></section></div>`);
+    <section class="ini2"><div class="copa imid"><div class="t">Tu midget</div></div><div class="copa ipz"><div class="t">Piezas y stock</div></div><div class="copa iaju"><div class="t">Ajustes</div></div></section></div>`);
   m.append(d);
   // tu midget: vitrina 3D, chasis, color, estado de las piezas y stock
   const car=d.querySelector(".imid");
   car.append(el(`<div><div class="s">Chasis ${TY_HUMAN[T.m]} · número ${T.num}. Cambiar de chasis cuesta ${fmt(TY_CHASIS_P)} y no se puede con la noche empezada.</div>
     <div class="row" style="flex-wrap:wrap;gap:6px;margin:8px 0">${TY_M.map(k=>`<button class="btn sm ${T.m===k?"oro":"sec"}" data-m="${k}">${TY_HUMAN[k]}</button>`).join("")}</div>
     <div class="row" style="flex-wrap:wrap;gap:6px">${TY_COL.slice(0,10).map(c=>`<button aria-label="color" data-c="${c}" style="width:30px;height:30px;border-radius:50%;background:${c};border:3px solid ${T.col===c?"var(--oro)":"var(--linea)"}"></button>`).join("")}</div>
-    <div class="sec-t" style="margin-top:12px">Estado de las piezas</div>${pzEstadoHTML(S.tayaJ)}<div class="sec-t" style="margin-top:8px">Stock de repuestos</div>${pzStockHTML()}</div>`));
+    </div>`));
+  d.querySelector(".ipz").append(el(`<div>${pzEstadoHTML(S.tayaJ)}<div class="sec-t" style="margin-top:8px">Stock de repuestos</div>${pzStockHTML()}</div>`));
   try{tyVitrina(car);}catch(e){}
   car.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{const k=b.dataset.m;if(k===T.m)return;if(S.tayaJ){toast("Con la noche empezada no se puede cambiar el chasis");return;}
     if(S.pesos<TY_CHASIS_P){toast("Cambiar de chasis cuesta "+fmt(TY_CHASIS_P)+": pasá por el kiosco");return;}
@@ -45,13 +48,17 @@ function vInicio(m){const T=tyPz(),reg=T.fecha<TY_REG,po=T.po;
   d.querySelector("#iEnt").onclick=()=>tyEntreno();
   d.querySelector("#iWar").onclick=()=>vWarnes();
   d.querySelector("#iKio").onclick=()=>vKiosco();
+  d.querySelector("#iTal").onclick=()=>vTaller();
   d.querySelector("#iTab").onclick=()=>vCampeonato();}
 // la fecha: usa la misma lógica de siempre (arma la noche, el box entre carreras y larga)
 function tyIrFecha(){if(typeof TYR!=="undefined"&&TYR)return;const tmp=document.createElement("div");_vTayaBase(tmp);const b=tmp.querySelector("#tyGo");if(b)b.click();}
-function vCampeonato(){const m=$("#main"),T=tyState(),po=T.po,tab=tyTabla(),yoI=tab.findIndex(r=>r.id==="yo");m.innerHTML="";hud();
-  const d=el(`<div class="kio"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Campeonato</h2><button class="btn sec" id="cVol" style="width:auto;flex:0 0 auto">◀ Inicio</button></div>
-    <p class="sub">${tab.length} pilotos · vas ${yoI+1}º${T.hist.length?` · última noche sumaste ${T.hist[0].yo} puntos`:""}</p>
-    <table class="ovtab"><tr><th>Pos</th><th>Piloto</th>${po?"<th>Playoff</th>":""}<th>Pts</th></tr>${tab.map((r,i)=>`<tr${r.id==="yo"?' class="yo"':''}><td>${i+1}</td><td>#${tyNum(r.id)} ${esc(tyNombre(r.id))}</td>${po?`<td>${r.vivo?r.po:"—"}</td>`:""}<td>${r.p}</td></tr>`).join("")}</table></div>`);
+function vCampeonato(){const m=$("#main"),T=tyState(),po=T.po,tab=tyTabla(),yoI=tab.findIndex(r=>r.id==="yo"),g=T.ganF||{};m.innerHTML="";hud();
+  const fila=(r,i,extra)=>`<tr${r.id==="yo"?' class="yo"':''}><td>${i+1}</td><td>#${tyNum(r.id)} ${esc(tyNombre(r.id))}</td><td>${g[r.id]?"🏆".repeat(Math.min(3,g[r.id]))+(g[r.id]>3?g[r.id]:""):""}</td>${extra}</tr>`;
+  const cp=T.cp?T.cp.ids.map(id=>({id,p:T.cp.pts[id]|0})).sort((a,b)=>b.p-a.p):null;
+  const d=el(`<div class="camp"><div class="row" style="justify-content:space-between;align-items:center"><div><h2 style="margin:0">Campeonato</h2>
+      <p class="sub" style="margin:2px 0 0">${tab.length} pilotos · vas ${yoI+1}º · fechas 1 a ${TY_REG} regulares, los 12 primeros al playoff y el resto a la Copa de Plata. Para ser campeón hay que haber ganado una final (🏆).</p></div><button class="btn sec" id="cVol" style="width:auto;flex:0 0 auto">◀ Inicio</button></div>
+    <div class="cgrid"><div class="copa"><div class="t">${po?"Playoff":"Temporada regular"}</div><div class="cscroll"><table class="ovtab"><tr><th>Pos</th><th>Piloto</th><th>Finales</th>${po?"<th>Playoff</th>":""}<th>Pts</th></tr>${tab.filter(r=>!po||po.todos.includes(r.id)).map((r,i)=>fila(r,i,`${po?`<td>${r.vivo?r.po:"afuera"}</td>`:""}<td>${r.p}</td>`)).join("")}</table></div></div>
+      ${cp?`<div class="copa"><div class="t">Copa de Plata</div><div class="cscroll"><table class="ovtab"><tr><th>Pos</th><th>Piloto</th><th>Finales</th><th>Pts</th></tr>${cp.map((r,i)=>fila(r,i,`<td>${r.p}</td>`)).join("")}</table></div></div>`:""}</div></div>`);
   m.append(d);$("#cVol").onclick=render;}
 
 /* ---------- sonido: siempre a mano, con lista desplegable ---------- */

@@ -95,3 +95,72 @@ body.pc #tyRace .typos b{font-size:34px}
 #sndPanel .sndck{display:flex;align-items:center;gap:8px;font:700 15px var(--f-ui);margin-top:4px}
 #sndPanel input[type=range]{accent-color:var(--oro)}
 #sndPanel input[type=checkbox]{width:18px;height:18px;accent-color:var(--oro)}
+/* ---------- todo en una pantalla: sin bajar para aceptar o cambiar ---------- */
+#top{padding:8px 24px}
+#top .marca b{font-size:26px}
+#main{padding:14px 24px 14px;max-width:1440px}
+#pie{padding:0 0 8px}
+.copa{margin:0}
+.inicio{display:flex;flex-direction:column;gap:12px}
+.inicio .hero{padding:12px 20px;margin:0}
+.inicio .hero h1{font-size:34px;margin:0 0 2px}
+.inicio .hero p{font-size:16px}
+.tiles{grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:0}
+.tile{min-height:0;padding:12px 14px;gap:3px}
+.tile i{font-size:26px}
+.tile b{font-size:18px}
+.tile span{font-size:13px}
+.ini2{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr);gap:12px}
+.ini2 .copa{padding:12px}
+.ini2 .tyvit{height:clamp(150px,26vh,240px);margin:6px 0 8px}
+.ini2 .sec-t{margin:8px 0 4px}
+.ajlist{gap:7px}
+.ajlist input,.ajlist select{padding:6px 8px;font-size:15px}
+.pzrow{grid-template-columns:118px 1fr auto;font-size:14px}
+@media (max-width:1100px){.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.ini2{grid-template-columns:1fr 1fr}.ini2 .iaju{grid-column:1/-1}}
+/* modales: anchos, con el botón siempre a la vista */
+.modal{padding:10px}
+#modal .box{max-width:680px;max-height:calc(100vh - 20px);padding:14px 16px}
+#modal .box.resplaca:has(#tyBoxW:not(:empty)){max-width:1080px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:18px;align-content:start;text-align:left}
+#modal .box.resplaca:has(#tyBoxW:not(:empty))>h3,#modal .box.resplaca:has(#tyBoxW:not(:empty))>p,#modal .box.resplaca:has(#tyBoxW:not(:empty))>.opts{grid-column:1/-1}
+#modal .box.resplaca:has(#tyBoxW:not(:empty))>.opts{flex-direction:row;flex-wrap:wrap}
+#modal .box.resplaca:has(#tyBoxW:not(:empty))>.opts .btn{flex:1 1 220px}
+#modal .box.resplaca:has(#tyBoxW:not(:empty))>table{grid-column:1;align-self:start}
+#modal .box.resplaca #tyBoxW{grid-column:2;grid-row:3}
+#modal .box.resplaca:has(#tyBoxW:not(:empty))>p.nota{grid-column:1;grid-row:3;align-self:start;margin-top:10px}
+#modal .box.resplaca #tyBoxW .copa{margin:10px 0 0;padding:10px}
+#modal .ovtab{font-size:13px;margin-top:6px}
+#modal .ovtab td{padding:3px 4px}
+#modal .opts{position:sticky;bottom:-14px;padding:10px 0 2px;background:inherit;z-index:2}
+#modal .box.resplaca>.opts{background:linear-gradient(transparent,var(--asfalto) 30%)}
+.typlaca .ovtab{font-size:13px}.typlaca .ovtab td{padding:3px 4px}
+.sufl{text-align:left;margin:0 0 10px;padding-left:22px;color:var(--crema-2);line-height:1.4}.sufl li{margin:4px 0}.sufl li.ok{color:var(--verde)}
+/* Warnes y taller compactos */
+.warnes .calle{height:74px;padding:10px 18px}
+.warnes .calle .cartel{font-size:22px}
+.warnes .calle span{font-size:12px;margin-top:3px}
+.wgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.local{padding:28px 12px 10px}
+.local h3{font-size:19px}
+.local .nota{font-size:13px;margin:0}
+.local .items{gap:6px;margin-top:6px}
+.local .item{padding:6px 8px;flex-direction:row;align-items:center}.local .item .btn{padding:7px 10px;font-size:12px;min-width:84px}
+.local .item b{font-size:14px}.local .item small{font-size:12px}
+.warnes>.copa{margin-top:10px!important;display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;align-items:start}.warnes>.copa .t{grid-column:1/-1}.warnes>.copa .pzgrid{grid-row:2/span 2}
+.warnes>.copa .sec-t{margin:0!important}
+@media (max-width:1100px){.wgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.taller .tgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:14px;margin-top:10px}
+.taller .titems{display:flex;flex-direction:column;gap:8px}
+.taller .item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--asfalto);border:1px solid var(--linea)}
+.taller .item b{display:block;font:700 16px var(--f-ui)}.taller .item small{color:var(--crema-2);font-size:13px}
+.taller .item .btn{width:auto;flex:0 0 auto;min-width:110px}
+.camp .cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:14px;margin-top:10px}
+.camp .cscroll{max-height:calc(100vh - 260px);overflow:auto}
+.kio .stack{gap:8px;margin:10px 0}.kio .pack{padding:9px 12px}
+#modal[hidden]{display:none!important}
+.inicio .hero{padding:10px 18px}.inicio .hero h1{display:none}
+.ajlist .row{margin-top:2px!important}.ajlist .row .btn{flex:1 1 0;width:auto;padding:8px 6px;font-size:13px}
+.ajlist label{font-size:13px;gap:2px}
+.warnes>.row{margin:8px 0 6px!important}.warnes>.row .sub{font-size:15px}
+.warnes .calle{height:64px!important}
+.local{padding-top:24px}.local .toldo{height:16px}.local .nota{font-size:12px!important;line-height:1.25}#pie{padding:0 0 4px;font-size:11px}

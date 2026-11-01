@@ -47,7 +47,7 @@ tyBox=function(J,cont,enGar){const T=tyPz();
 function pzFinCarrera(R){if(!R||R.c.entreno||R.c.vivo)return;const J=R.J,v=R.c.laps/5;
   pzGastar("tren",2.2*v);pzGastar("amort",2.6*v);pzGastar("jaula",.6*v);if(J&&J.blandas)J.gUso=Math.min(TY_GOMA_MAX,(J.gUso|0)+1);save();}
 function pzGolpe(tipo,imp){const T=tyPz();
-  if(tipo==="vuelco"){pzGastar("tren",38);pzGastar("amort",32);pzGastar("jaula",48);}
+  if(tipo==="vuelco"){T.chapa=true;pzGastar("tren",38);pzGastar("amort",32);pzGastar("jaula",48);}
   else if(tipo==="pared"){pzGastar("tren",26);pzGastar("amort",18);pzGastar("jaula",24);}
   else if(tipo==="rueda"){pzGastar("tren",30);pzGastar("amort",24);pzGastar("jaula",30);}
   else if(tipo==="trompo"){pzGastar("tren",4);pzGastar("amort",3);}
@@ -72,7 +72,7 @@ const WARNES=[
 function vWarnes(){const m=$("#main"),T=tyPz(),cerrado=!!S.tayaJ;m.innerHTML="";hud();
   const d=el(`<div class="warnes"><div class="calle"><div class="cartel">Av. WARNES</div><span>la calle de los repuestos</span></div>
     <div class="row" style="justify-content:space-between;align-items:center;gap:10px;margin:14px 0 6px"><p class="sub" style="margin:0">Comprá antes de la fecha: durante la noche solo vas a poder usar lo que tengas en stock.</p><button class="btn sec" id="wVol" style="width:auto;flex:0 0 auto">◀ Inicio</button></div>
-    ${cerrado?`<p class="nota" style="color:var(--rojo)">La noche ya empezó: Warnes está cerrado hasta que termine la fecha. Usá lo que tenés en stock.</p>`:""}
+    ${cerrado?`<p class="nota" style="color:var(--rojo)">La noche ya empezó: Warnes está cerrado hasta que termine la fecha. Usá lo que tenés en stock, o abandoná la noche desde el box y llevá el auto al taller.</p>`:""}
     <div class="wgrid"></div><div class="copa" style="margin-top:16px"><div class="t">Tu midget</div>${pzEstadoHTML(null)}<div class="sec-t" style="margin-top:8px">Stock</div>${pzStockHTML()}</div></div>`);
   const g=d.querySelector(".wgrid");
   WARNES.forEach(c=>{const card=el(`<div class="local" style="--c:${c.col}"><div class="toldo"></div><h3>${c.ic} ${c.n}</h3><p class="nota">${c.d}</p><div class="items"></div></div>`);
