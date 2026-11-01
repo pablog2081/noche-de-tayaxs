@@ -134,3 +134,15 @@ function tyCabina(E,P,pp,dt){const TH=T3.TH,g=P.g;if(!g)return;const cab=E.cab||
   if(g.userData.piv)g.userData.piv.visible=false;}
 // al salir de la cámara de adentro, el auto vuelve a verse
 (function(){const t=setInterval(()=>{if(typeof TYR==="undefined")return;const R=TYR;if(R&&R.P&&R.P.g&&R.cam!=="cabina"&&R.P.g.userData.piv&&!R.P.g.userData.piv.visible)R.P.g.userData.piv.visible=true;},300);})();
+
+/* ---------- torres de luz: bastidor con 8 reflectores cada una, como en el autódromo ---------- */
+function tyTorresReales(E){const TH=T3.TH;if(!E.heads)return;const lamp=new TH.MeshBasicMaterial({color:new TH.Color(7,6.6,5.6),fog:false}),marco=new TH.MeshStandardMaterial({color:0x3a3d42,roughness:.6,metalness:.6}),
+  geoL=new TH.CylinderGeometry(.42,.48,.35,16),geoC=new TH.CylinderGeometry(.5,.5,.42,16,1,true);
+  E.heads.forEach(h=>{const g=new TH.Group();g.position.copy(h.position);g.quaternion.copy(h.quaternion);
+    const bast=new TH.Mesh(new TH.BoxGeometry(5.4,2.6,.18),marco);g.add(bast);
+    for(let r=0;r<2;r++)for(let c=0;c<4;c++){const x=-1.95+c*1.3,y=-.62+r*1.24;
+      const caja=new TH.Mesh(geoC,marco);caja.rotation.x=Math.PI/2;caja.position.set(x,y,.3);g.add(caja);
+      const l=new TH.Mesh(geoL,lamp);l.rotation.x=Math.PI/2;l.position.set(x,y,.32);g.add(l);}
+    h.visible=false;h.parent.add(g);});}
+const _tyRealismoBase=tyRealismo;
+tyRealismo=function(E){_tyRealismoBase(E);try{tyTorresReales(E);}catch(e){console.warn("torres",e);}};

@@ -1,5 +1,5 @@
 /* Noche de TAYA'xs — pantalla principal (PC) */
-const BUILD="v3";
+const BUILD="v4";
 function hud(){$("#hPesos").textContent=fmt(S.pesos);$("#hApodo").textContent=S.apodo?"Piloto: "+S.apodo:"";$("#bMute").textContent=muted?"🔇":"🔊";}
 function render(){hud();const m=$("#main");m.innerHTML="";
   if(!S.apodo){m.append(bienvenida());return;}
@@ -13,7 +13,7 @@ function bienvenida(){const d=el(`<div class="copa bienv"><h2>Noche de TAYA'xs</
   <label class="nota">¿Cómo te dicen en el ambiente?</label>
   <input id="bApodo" maxlength="16" placeholder="Tu apodo" style="font:700 22px var(--f-ui);padding:10px;border-radius:10px;border:1px solid var(--linea);background:var(--asfalto);color:var(--crema);width:100%;margin:6px 0 12px">
   <button class="btn oro" id="bEmp">Entrar al autódromo</button></div>`);
-  d.querySelector("#bEmp").onclick=()=>{const v=(d.querySelector("#bApodo").value||"").trim();if(!v){toast("Poné tu apodo");return;}S.apodo=v.slice(0,16);save();render();};
+  d.querySelector("#bEmp").onclick=()=>{const v=(d.querySelector("#bApodo").value||"").trim();if(!v){toast("Poné tu apodo");return;}S.apodo=v.slice(0,16);{const m=TY_VOCES.find(n=>tySlug(n)===tySlug(v.split(" ")[0]));if(m&&!S.tyVoz)S.tyVoz=tySlug(m);}save();render();};
   setTimeout(()=>{try{d.querySelector("#bApodo").focus();}catch(e){}},50);return d;}
 function graficosMenu(){const g=S.graf||"ultra";
   modal(`<h3>Gráficos</h3><p class="nota">Ultra: sombras de las torres de luz, brillo de las luces, antialias fino y más resolución. Si la PC anda trabada, bajalo.</p>
