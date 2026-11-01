@@ -1,5 +1,5 @@
 /* Noche de TAYA'xs — pantalla principal (PC) */
-const BUILD="v2";
+const BUILD="v3";
 function hud(){$("#hPesos").textContent=fmt(S.pesos);$("#hApodo").textContent=S.apodo?"Piloto: "+S.apodo:"";$("#bMute").textContent=muted?"🔇":"🔊";}
 function render(){hud();const m=$("#main");m.innerHTML="";
   if(!S.apodo){m.append(bienvenida());return;}
@@ -21,7 +21,7 @@ function graficosMenu(){const g=S.graf||"ultra";
     <div class="opts"><button class="btn oro" id="gOk">Listo</button></div>`);
   document.querySelectorAll('input[name="gq"]').forEach(i=>i.onchange=()=>{S.graf=i.value;save();});$("#gOk").onclick=closeModal;}
 function sonidoMenu(){const row=(k,t,on)=>`<label class="aopt" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0"><span>${t}</span><input type="checkbox" data-k="${k}" ${on?"checked":""} style="width:22px;height:22px"></label>`;
-  modal(`<h3>Sonido</h3>${row("all","Todo el sonido",!muted)}${row("mus","La cumbia de fondo",!noMus)}${row("voz","El relato de Fefón",!noVoz)}${row("fx","Motores y golpes",!noFx)}<div class="opts"><button class="btn oro" id="aOk">Listo</button></div>`);
+  modal(`<h3>Sonido</h3>${row("all","Todo el sonido",!muted)}${row("mus","Música de fondo",!noMus)}${row("voz","El relato de Fefón",!noVoz)}${row("fx","Motores y golpes",!noFx)}<div class="opts"><button class="btn oro" id="aOk">Listo</button></div>`);
   document.querySelectorAll("input[data-k]").forEach(i=>i.onchange=()=>{const v=!i.checked;({all:()=>muted=v,mus:()=>noMus=v,voz:()=>noVoz=v,fx:()=>noFx=v})[i.dataset.k]();
     try{localStorage.setItem(KEY+".mute",muted?"1":"0");localStorage.setItem(KEY+".nomus",noMus?"1":"0");localStorage.setItem(KEY+".novoz",noVoz?"1":"0");localStorage.setItem(KEY+".nofx",noFx?"1":"0");}catch(e){}bgm();hud();});
   $("#aOk").onclick=closeModal;}

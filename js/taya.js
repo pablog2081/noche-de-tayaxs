@@ -420,12 +420,12 @@ function tyUI(on){let u=$("#tyRace");
     gas.addEventListener("pointerdown",on2);["pointerup","pointercancel","pointerleave"].forEach(ev=>gas.addEventListener(ev,off));
     for(const [id,v] of [["tyIzq",-1],["tyDer",1]]){const b=$("#"+id);b.addEventListener("pointerdown",e=>{e.preventDefault();if(TYR)TYR.steer=v;b.classList.add("on");});
       ["pointerup","pointercancel","pointerleave"].forEach(ev=>b.addEventListener(ev,e=>{if(TYR&&TYR.steer===v)TYR.steer=0;b.classList.remove("on");}));}
-    $("#tyCam").onclick=()=>{S.tyCam=(S.tyCam||"lado")==="lado"?"atras":(S.tyCam==="atras"?"arriba":"lado");if(TYR)TYR.cam=S.tyCam;save();tyCamBtn();};
+    $("#tyCam").onclick=()=>{const CS=["atras","cabina","lado","arriba"];S.tyCam=CS[(CS.indexOf(S.tyCam||"atras")+1)%CS.length];if(TYR)TYR.cam=S.tyCam;save();tyCamBtn();};
     $("#tyVol").onclick=()=>{S.tyVol=(S.tyVol||"auto")==="auto"?"manual":"auto";save();tyVolBtn();toast(S.tyVol==="auto"?"Volante automático: sigue la línea y esquiva. ◀ ▶ cambian la línea":"Volante manual: ◀ dobla adentro, ▶ contravolante");};
     $("#tyQuit").onclick=()=>{if(!TYR||TYR.done)return;const R=TYR;R.P.out="abandono";R.yoFuera=true;R.done=true;toast(R.c.vivo?"Abandonaste la carrera":"Abandonaste: se termina tu noche");};
     u.addEventListener("contextmenu",e=>e.preventDefault());}
   u.hidden=false;document.body.classList.add("tyrun");tyCamBtn();tyVolBtn();$("#tyGas").classList.remove("on");}
-function tyCamBtn(){const b=$("#tyCam");if(b)b.innerHTML="Cámara<br>"+({lado:"de costado",atras:"de atrás",arriba:"de arriba"}[S.tyCam||"lado"]);}
+function tyCamBtn(){const b=$("#tyCam");if(b)b.innerHTML="Cámara<br>"+({lado:"de costado",atras:"de atrás",arriba:"de arriba",cabina:"de adentro"}[S.tyCam||"atras"]);}
 function tyVolBtn(){const b=$("#tyVol");if(b)b.innerHTML="Volante<br>"+((S.tyVol||"auto")==="auto"?"automático":"manual");}
 window.addEventListener("keydown",e=>{if(!TYR||!$("#modal").hidden)return;const c=e.code;let u=true;if(e.repeat){if(tk("gas",c)||tk("izq",c)||tk("der",c))e.preventDefault();return;}
   if(tk("gas",c)){TYR.gas=true;$("#tyGas").classList.add("on");audioInit();}
@@ -718,12 +718,14 @@ function tyDraw(R){const cv=$("#tyScene");if(!cv)return;const dpr=prUltra(Math.m
     if(!R.green&&!R.done&&(R.esperaLuz||R.roja||!R.relargadas)&&R.t<2){const a=tyPose(-30,-TY.W/2-6),b=tyPose(-8,0);E.cam.fov=asp<1?60:48;E.cam.position.set(a.x,6,a.z);E.cam.lookAt(b.x,1,b.z);}
     else if(R.cam==="atras"){const back=asp<1?8:7,c0=tyPose(P.s-back,P.d*.8),c1=tyPose(P.s+14,P.d*.6);const tgt=new TH.Vector3(c0.x,tyY(P.s-back,P.d)+(asp<1?3.2:2.8),c0.z);if(!R.cp||R.cp.distanceTo(tgt)>25)R.cp=tgt.clone();else R.cp.lerp(tgt,Math.min(1,dt*6));
       E.cam.fov=asp<1?66:56;E.cam.position.copy(R.cp);E.cam.lookAt(c1.x,1,c1.z);}
+    else if(R.cam==="cabina"){E.cam.fov=asp<1?80:70;tyCabina(E,P,pp,dt);}
     else if(R.cam==="arriba"){E.cam.fov=50;E.cam.position.set(pp.x*.55,48,pp.z*.55+(asp<1?30:20));E.cam.lookAt(pp.x*.8,0,pp.z*.8);}
     else{ // 90° desde adentro: el auto pasa de costado y atrás se ven las tribunas llenas
       const dIn=asp<1?-TY.W/2-15:-TY.W/2-11,c0=tyPose(P.s-2,dIn);const tgt=new TH.Vector3(c0.x,3.4,c0.z);if(!R.cp||R.cp.distanceTo(tgt)>30)R.cp=tgt.clone();else R.cp.lerp(tgt,Math.min(1,dt*5));
       E.cam.fov=asp<1?62:44;E.cam.position.copy(R.cp);E.cam.lookAt(pp.x,py+1.6,pp.z);}
     if(R.anim&&R.anim.tipo==="salida"){const SB=TYB,m1=SB.mods[SB.mods.length-1][1],L0=TY.LAP,ya=R.anim.corte||(R.anim.corte=R.anim.items.some(o=>{const q=((o.e.s%L0)+L0)%L0;return q>SB.sal-4||q<60;})),CP=window.__salCam||(ya?[372,-10,8,350,14,1,70]:[m1+5,SB.road,7.5,m1-28,SB.road,.8,62]),c0=tyPose(CP[0],CP[1]),t0=tyPose(CP[3],CP[4]);E.cam.fov=asp<1?CP[6]+14:CP[6];E.cam.position.set(c0.x,CP[2],c0.z);E.cam.lookAt(t0.x,CP[5],t0.z);}
     else if(R.anim){const C=R.anim.cam,F=C?{s:C.fs,d:C.fd}:(R.anim.sigue||P),fp=tyPose(F.s,F.d),c0=C?tyPose(C.s,C.d):tyPose(F.s-11,F.d-3);const tgt=new TH.Vector3(c0.x,C?C.y:6.5,c0.z);if(!R.ap||R.ap.distanceTo(tgt)>40)R.ap=tgt.clone();else R.ap.lerp(tgt,Math.min(1,dt*3));E.cam.fov=asp<1?64:50;E.cam.position.copy(R.ap);E.cam.lookAt(fp.x,tyYc(F.s,F.d)+.8,fp.z);}
+    if(E.cab&&R.cam!=="cabina")E.cab.visible=false;
     if(window.__tyCam){const q=window.__tyCam;E.cam.position.set(...q.p);E.cam.lookAt(...q.l);E.cam.fov=q.f||60;}
     E.cam.updateProjectionMatrix();
     ren.setClearColor(0x05070d,1);gfxRender(E.sc,E.cam,w,h);}
@@ -877,18 +879,18 @@ function tyPersona(f,alto){TY3.per=TY3.per||{};if(TY3.per[f])return Promise.reso
 function tyPilotoReal(TH,id){const src=TY3.per&&TY3.per.piloto;if(!src)return null;const g=src.clone(true),tint=new TH.Color(tyPiloto(id).col);
   g.traverse(q=>{if(q.isMesh){q.material=q.material.clone();q.material.roughness=.7;q.material.metalness=0;
     q.material.onBeforeCompile=sh=>{sh.uniforms.uTint={value:tint};sh.fragmentShader="uniform vec3 uTint;\n"+sh.fragmentShader.replace("#include <map_fragment>","#include <map_fragment>\n{vec3 c=diffuseColor.rgb;float l=max(c.r,max(c.g,c.b)),sat=l-min(c.r,min(c.g,c.b));float w=smoothstep(.5,.78,l)*(1.-smoothstep(.07,.2,sat));diffuseColor.rgb=mix(c,uTint*l*1.05,w);}");};}});
-  if(id==="t0"){const m=new TH.MeshStandardMaterial({color:0xf2c230,roughness:.6}),y=1.78*.985;const gor=new TH.Mesh(new TH.SphereGeometry(.12,14,8,0,Math.PI*2,0,Math.PI/2),m);gor.position.set(0,y-.1,0);g.add(gor);
+  if(false){const m=new TH.MeshStandardMaterial({color:0xf2c230,roughness:.6}),y=1.78*.985;const gor=new TH.Mesh(new TH.SphereGeometry(.12,14,8,0,Math.PI*2,0,Math.PI/2),m);gor.position.set(0,y-.1,0);g.add(gor);
     const vis=new TH.Mesh(new TH.CylinderGeometry(.11,.11,.015,14,1,false,-Math.PI/2,Math.PI),m);vis.position.set(0,y-.1,.08);g.add(vis);}
   g.userData.real=true;return g;}
 function tyPilotoFig(TH,id){const g=new TH.Group(),c=new TH.Color(tyPiloto(id).col),m=new TH.MeshStandardMaterial({color:c,roughness:.7});
   const cuerpo=new TH.Mesh(new TH.CylinderGeometry(.2,.22,.8,10),m);cuerpo.position.y=.4;g.add(cuerpo);
   const cab=new TH.Mesh(new TH.SphereGeometry(.15,12,10),new TH.MeshStandardMaterial({color:id==="t0"?0x7a4b2a:0xe0ac80}));cab.position.y=.95;g.add(cab);
   const brazo=new TH.Group();brazo.position.set(0,.72,.2);const b=new TH.Mesh(new TH.CylinderGeometry(.05,.05,.55,8),m);b.position.y=.27;brazo.add(b);g.add(brazo);
-  if(id==="t0"){const gorra=new TH.Mesh(new TH.CylinderGeometry(.16,.16,.1,12),new TH.MeshStandardMaterial({color:0xf2c230}));gorra.position.y=1.06;g.add(gorra);const vis=new TH.Mesh(new TH.BoxGeometry(.18,.02,.14),new TH.MeshStandardMaterial({color:0xf2c230}));vis.position.set(.14,1.02,0);g.add(vis);}
+  if(false){const gorra=new TH.Mesh(new TH.CylinderGeometry(.16,.16,.1,12),new TH.MeshStandardMaterial({color:0xf2c230}));gorra.position.y=1.06;g.add(gorra);const vis=new TH.Mesh(new TH.BoxGeometry(.18,.02,.14),new TH.MeshStandardMaterial({color:0xf2c230}));vis.position.set(.14,1.02,0);g.add(vis);}
   return g;}
-// la cumbia de la noche (con Pochón en la letra)
+// música de la noche (la cumbia de Pochón ya no va)
 const CUMBIA=new Audio();CUMBIA.preload="none";
-function tyCumbia(on){try{if(on&&!(muted||noMus)){if(!CUMBIA.src.endsWith("taya/cumbia.mp3?v=45"))CUMBIA.src="taya/cumbia.mp3?v=45";CUMBIA.currentTime=0;CUMBIA.volume=.42;CUMBIA.play().catch(()=>{});BGM.pause();}else{CUMBIA.pause();setTimeout(bgm,0);}}catch(e){}}
+function tyCumbia(on){try{CUMBIA.pause();}catch(e){}} /* la música de la noche se cambia: por ahora sin tema */
 
 /* ---------- pantalla del nivel ---------- */
 function vTaya(m){const T=tyState();

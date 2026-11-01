@@ -15,8 +15,8 @@ function cineFX(){} // el look de cine ahora lo hace el post-proceso 3D (gfx.js)
 const TECLAS_DEF={gas:["ArrowUp","KeyW"],izq:["ArrowLeft","KeyA"],der:["ArrowRight","KeyD"],camara:["KeyC",""],volante:["KeyV",""],pausa:["Escape","KeyP"]};
 const TECLA_N={gas:"Acelerar",izq:"Doblar adentro",der:"Contravolante / abrirse",camara:"Cambiar la cámara",volante:"Volante automático o manual",pausa:"Pausa"};
 let TECLAS=JSON.parse(JSON.stringify(TECLAS_DEF));try{const t=JSON.parse(localStorage.getItem(KEY+".teclas")||"null");if(t)for(const k in TECLAS_DEF)if(Array.isArray(t[k]))TECLAS[k]=[t[k][0]||"",t[k][1]||""];}catch(e){}
-// música: la cumbia de la noche hace de tema del juego
+// música de fondo: todavía sin tema (la cumbia de Pochón ya no va)
 const BGM=new Audio();BGM.loop=true;BGM.preload="none";BGM.volume=.35;
-function bgm(){try{if(muted||noMus||(typeof TYR!=="undefined"&&TYR)){BGM.pause();return;}if(!BGM.src)BGM.src="taya/cumbia.mp3?v=45";if(BGM.paused)BGM.play().catch(()=>{});}catch(e){}}
+function bgm(){try{if(muted||noMus||(typeof TYR!=="undefined"&&TYR)){BGM.pause();return;}if(!BGM.src)return;if(BGM.paused)BGM.play().catch(()=>{});}catch(e){}}
 function audioInit(){if(AC||muted){bgm();return;}try{AC=new (window.AudioContext||window.webkitAudioContext)();loadSounds();}catch(e){}bgm();}
 ["pointerdown","keydown"].forEach(ev=>window.addEventListener(ev,()=>{audioInit();},{passive:true}));

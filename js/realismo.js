@@ -95,3 +95,42 @@ tyAutoObj=function(e){const g=_tyAutoObjBase(e);if(!g)return g;try{const TH=T3.T
     const k="sp|"+t+fondo;TY3.spT=TY3.spT||{};const tex=TY3.spT[k]||(TY3.spT[k]=tySponTex(t,fondo,tinta));
     const pl=new TH.Mesh(new TH.PlaneGeometry(d.w,d.w*.25),new TH.MeshStandardMaterial({map:tex,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,roughness:.45}));pl.position.copy(d.p);pl.lookAt(d.p.clone().add(d.n));piv.add(pl);});
 }catch(err){console.warn("ploteo",err);}return g;};
+
+/* ---------- cámara de adentro: los ojos del piloto, el volante y los relojes ---------- */
+function tyCabArmar(E){const TH=T3.TH,cab=new TH.Group();
+  const neg=new TH.MeshStandardMaterial({color:0x1a1a1a,roughness:.75}),gris=new TH.MeshStandardMaterial({color:0x8a8f96,roughness:.35,metalness:.7});
+  // volante de gamuza con 3 rayos y la marca amarilla arriba
+  const vol=new TH.Group();const aro=new TH.Mesh(new TH.TorusGeometry(.17,.022,10,40),neg);vol.add(aro);
+  for(const a of[0,2.1,-2.1]){const r=new TH.Mesh(new TH.BoxGeometry(.03,.16,.012),gris);r.position.set(Math.sin(a)*.08,-Math.cos(a)*.08,0);r.rotation.z=a;vol.add(r);}
+  const cen=new TH.Mesh(new TH.CylinderGeometry(.045,.045,.03,20),gris);cen.rotation.x=Math.PI/2;vol.add(cen);
+  const marca=new TH.Mesh(new TH.BoxGeometry(.02,.03,.03),new TH.MeshStandardMaterial({color:0xf2c230,roughness:.5}));marca.position.y=.17;vol.add(marca);
+  vol.position.set(0,-.24,-.48);vol.rotation.x=-.35;cab.add(vol);cab.userData.vol=vol;
+  // tablero con relojes (temperatura, presión de aceite, vueltas)
+  const tab=new TH.Mesh(new TH.BoxGeometry(.62,.1,.12),neg);tab.position.set(0,-.17,-.66);tab.rotation.x=-.3;cab.add(tab);
+  const relojT=dTex(128,128,(x,w,h)=>{x.fillStyle="#f2f2ee";x.beginPath();x.arc(64,64,60,0,7);x.fill();x.strokeStyle="#111";x.lineWidth=4;x.stroke();for(let i=0;i<9;i++){const a=Math.PI*.75+i/8*Math.PI*1.5;x.beginPath();x.moveTo(64+Math.cos(a)*44,64+Math.sin(a)*44);x.lineTo(64+Math.cos(a)*54,64+Math.sin(a)*54);x.stroke();}});
+  const agujas=[];for(const xx of[-.17,0,.17]){const r=new TH.Mesh(new TH.CircleGeometry(.04,24),new TH.MeshBasicMaterial({map:relojT}));r.position.set(xx,-.115,-.615);r.rotation.x=-.3;cab.add(r);
+    const ag=new TH.Mesh(new TH.PlaneGeometry(.004,.034),new TH.MeshBasicMaterial({color:0xd7263d}));ag.geometry.translate(0,.017,0);ag.position.set(xx,-.113,-.611);ag.rotation.x=-.3;cab.add(ag);agujas.push(ag);}
+  cab.userData.agujas=agujas;
+  // caños de la jaula a los costados y arriba (el marco de la vista)
+  for(const sx of[-1,1]){const c=new TH.Mesh(new TH.CylinderGeometry(.022,.022,1.2,8),neg);c.position.set(sx*.42,.05,-.42);c.rotation.x=.55;c.rotation.z=sx*.12;cab.add(c);}
+  const top=new TH.Mesh(new TH.CylinderGeometry(.022,.022,.9,8),neg);top.rotation.z=Math.PI/2;top.position.set(0,.36,-.55);cab.add(top);
+  // red de seguridad del lado izquierdo
+  const red=dTex(128,128,(x,w,h)=>{x.clearRect(0,0,w,h);x.strokeStyle="rgba(15,15,15,.95)";x.lineWidth=5;for(let i=0;i<=128;i+=16){x.beginPath();x.moveTo(i,0);x.lineTo(i,128);x.stroke();x.beginPath();x.moveTo(0,i);x.lineTo(128,i);x.stroke();}});
+  const rd=new TH.Mesh(new TH.PlaneGeometry(.5,.45),new TH.MeshBasicMaterial({map:red,transparent:true,side:TH.DoubleSide,depthWrite:false}));rd.position.set(-.46,.02,-.25);rd.rotation.y=Math.PI/2.4;cab.add(rd);
+  cab.traverse(o=>{o.frustumCulled=false;o.renderOrder=20;if(o.material){o.material.depthTest=true;o.material.fog=false;}});
+  E.cam.add(cab);E.sc.add(E.cam);E.cab=cab;return cab;}
+function tyCabina(E,P,pp,dt){const TH=T3.TH,g=P.g;if(!g)return;const cab=E.cab||tyCabArmar(E);cab.visible=true;
+  // hacia dónde apunta la trompa: el eje del modelo que más coincide con la dirección de marcha
+  g.updateMatrixWorld(true);const ax=new TH.Vector3(1,0,0).transformDirection(g.matrixWorld),q1=tyPose(P.s+1,P.d),mar=new TH.Vector3(q1.x-pp.x,0,q1.z-pp.z).normalize();
+  const sgn=Math.sign(ax.dot(new TH.Vector3().copy(mar).applyAxisAngle(new TH.Vector3(0,1,0),-(P.sa||0))))||1,fw=ax.multiplyScalar(sgn).setY(0).normalize();
+  const hy=g.position.y+1.05+(g.userData.piv?g.userData.piv.rotation.z*.4:0),side=new TH.Vector3(-fw.z,0,fw.x);
+  const eye=new TH.Vector3(g.position.x,hy,g.position.z).addScaledVector(fw,-.15).addScaledVector(side,.08);
+  E.cam.position.copy(eye);E.cam.lookAt(eye.x+fw.x*20,hy-.9,eye.z+fw.z*20);
+  // el volante gira con el contravolante y la cabeza se sacude con la tierra
+  const R=TYR,st=R?(R.steer||0):0;cab.userData.vol.rotation.z+=((-st*1.4+(P.sa||0)*1.2)-cab.userData.vol.rotation.z)*Math.min(1,dt*8);
+  E.cam.position.y+=Math.sin(performance.now()/37)*.006*Math.min(1,P.v/20);
+  const ag=cab.userData.agujas;if(ag){ag[0].rotation.z=-.6+.2*Math.sin(performance.now()/3000);ag[1].rotation.z=1.2-Math.min(2.4,P.v/14);ag[2].rotation.z=-.4-(P.th||0)*1.6;}
+  // el propio auto no se dibuja por dentro (taparía la vista), pero sí su sombra y el polvo
+  if(g.userData.piv)g.userData.piv.visible=false;}
+// al salir de la cámara de adentro, el auto vuelve a verse
+(function(){const t=setInterval(()=>{if(typeof TYR==="undefined")return;const R=TYR;if(R&&R.P&&R.P.g&&R.cam!=="cabina"&&R.P.g.userData.piv&&!R.P.g.userData.piv.visible)R.P.g.userData.piv.visible=true;},300);})();
