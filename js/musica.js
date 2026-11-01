@@ -18,7 +18,7 @@ function musTaller(){clearTimeout(MUS.fxT);MUS.fxT=setTimeout(()=>{if(MUS.estado
       s.connect(g);if(p){p.pan.value=(Math.random()*2-1)*.7;g.connect(p);p.connect(MUS.fx);}else g.connect(MUS.fx);s.start();}
     musTaller();},4300+Math.random()*1400);}
 function musEspera(){musParar(.6);if(!musTocar("espera",true))return;MUS.estado="espera";musTaller();}
-function musArrancar(){if(!AC)return;if(!MUS.g){MUS.g=AC.createGain();MUS.g.connect(AC.destination);MUS.fx=AC.createGain();MUS.fx.connect(AC.destination);}musVol();
+function musArrancar(){if(!AC)return;if(typeof volAplicar==="function")volAplicar();if(!MUS.g){MUS.g=AC.createGain();MUS.g.connect(AC.destination);MUS.fx=AC.createGain();MUS.fx.connect(AC.destination);}musVol();
   musCargar().then(()=>{if(typeof TYR!=="undefined"&&TYR)return;if(MUS.estado!=="off")return;
     if(!MUS.introYa&&MUS.buf.intro){MUS.introYa=true;MUS.estado="intro";musTocar("intro",false,()=>musEspera());}else musEspera();});}
 // reemplaza a la música vieja: en menús suena esto; en carrera, nada

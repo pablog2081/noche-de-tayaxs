@@ -964,7 +964,7 @@ function vTaya(m){const T=tyState();
     modal(`<h3 class="gan">Noche de TAYA'xs · Fecha ${J.fecha}</h3><p>${J.ent.length} autos en el autódromo. ${J.carreras?"Te toca":"Arrancás en"} la <b>${esc(c.nom)}</b> (${c.laps} vueltas, ${c.ids.length} autos). Se larga de a 4 por fila. Pasan a las semis los 32 mejores tiempos de las series; el resto va al repechaje. Las gomas aguantan 3 carreras: en el box usás lo que tenés en stock.</p>
       <p class="nota">Acelerá en verde. En las curvas el auto derrapa: si le das de más se va contra el paredón o hace un trompo; si le das de menos te pasan. ◀ te lleva para adentro, ▶ para afuera (contravolante).</p><div id="tyBoxW"></div><div class="opts"><button class="btn oro" id="tyL">¡A la pista!</button><button class="btn sec" id="tyAb">Abandonar la noche e ir al taller</button></div>`,"resplaca");if($("#tyAb"))$("#tyAb").onclick=()=>tyRetiro(J);
     const bL=$("#tyL"),chk=()=>{const v=pzPuedeLargar(J);bL.disabled=!!v;bL.textContent=v||"¡A la pista!";};
-    if(J.carreras){const bx=tyBox(J,chk);$("#tyBoxW").append(bx());}chk();
+    {const bx=tyBox(J,chk);$("#tyBoxW").append(bx());}chk();
     bL.onclick=()=>{if(pzPuedeLargar(J))return;closeModal();tyLargar(c,J);};};
   tyAmigosCard(m);
   // tu midget

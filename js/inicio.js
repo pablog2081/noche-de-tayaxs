@@ -87,3 +87,7 @@ document.body.append(el(`<button id="sndBtn" title="Sonido">🔊</button>`));
 $("#sndBtn").onclick=e=>{e.stopPropagation();audioInit();volAplicar();sndAbrir();};
 $("#bMute").onclick=e=>{e.stopPropagation();audioInit();volAplicar();sndAbrir();};
 setInterval(volAplicar,1000);volAplicar();
+// si el juego está abierto en otra pestaña y ahí se apaga el sonido, se apaga acá también
+window.addEventListener("storage",e=>{if(!e.key||!e.key.startsWith(KEY+"."))return;const g=k=>localStorage.getItem(KEY+k)==="1";
+  try{muted=g(".mute");noMus=g(".nomus");noVoz=g(".novoz");noFx=g(".nofx");const v=JSON.parse(localStorage.getItem(KEY+".vol")||"{}");Object.assign(VOL,v);}catch(x){}
+  volAplicar();bgm();hud();});
