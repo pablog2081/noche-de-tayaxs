@@ -80,9 +80,9 @@ function tyPloteo(mat,TH,box,c1,c2,c3,seed){mat.color.setRGB(1,1,1);
 // más puntos de la chapa para los calcos de sponsors (adelante y atrás del número)
 function tySponPts(m,src){TY3.dsp=TY3.dsp||{};if(TY3.dsp[m])return TY3.dsp[m];const TH=T3.TH,rc=new TH.Raycaster(),out=[];src.updateMatrixWorld(true);
   const box=new TH.Box3().setFromObject(src),L=box.max.x-box.min.x,cx=(box.max.x+box.min.x)/2,H=box.max.y-box.min.y;
-  for(const sd of[1,-1])for(const [fx,fy] of[[.2,.36],[.3,.3],[-.32,.34]]){rc.set(new TH.Vector3(cx+fx*L,box.min.y+fy*H,sd*4),new TH.Vector3(0,0,-sd));rc.far=8;
+  for(const sd of[1,-1])for(const [fx,fy] of[[.12,.42],[0,.3],[-.07,.46]]){rc.set(new TH.Vector3(cx+fx*L,box.min.y+fy*H,sd*4),new TH.Vector3(0,0,-sd));rc.far=8;
     const h=rc.intersectObject(src,true).find(q=>q.face);if(!h)continue;const n=h.face.normal.clone().transformDirection(h.object.matrixWorld);if(Math.abs(n.z)<.5||Math.sign(n.z)!==sd)continue;
-    out.push({p:h.point.clone().add(n.clone().multiplyScalar(.014)),n,w:.5});}
+    const q=h.point.clone().add(n.clone().multiplyScalar(.014));let nums=[];try{nums=tyDecalPts(m,src);}catch(x){}if(nums.some(d=>d.p.distanceTo(q)<.5))continue;out.push({p:q,n,w:.42});}
   return TY3.dsp[m]=out;}
 const _tyAutoObjBase=tyAutoObj;
 tyAutoObj=function(e){const g=_tyAutoObjBase(e);if(!g)return g;try{const TH=T3.TH,src=TY3.mod[e.m],piv=g.userData.piv;
@@ -171,9 +171,9 @@ vTaya=function(m){_vTayaBase(m);try{const card=[...m.querySelectorAll(".copa")].
 /* ---------- tierra regada que brilla, cielo con el resplandor de la ciudad ---------- */
 function tyNocheReal(E){const TH=T3.TH,sc=E.sc;
   // la huella de carrera: tierra húmeda y apisonada que refleja las torres
-  if(E.huella){const m=E.huella.material;m.roughness=.32;m.metalness=0;m.envMapIntensity=1.4;m.color.setHex(0x2e1f13);m.opacity=.62;
+  if(E.huella){const m=E.huella.material;m.roughness=.95;m.metalness=0;m.envMapIntensity=.12;m.color.setHex(0x34241a);m.opacity=.5;
     const h=dTex(512,128,(x,w,hh)=>{x.fillStyle="#fff";x.fillRect(0,0,w,hh);for(let i=0;i<500;i++){x.fillStyle=`rgba(0,0,0,${Math.random()*.35})`;x.fillRect(Math.random()*w,Math.random()*hh,2+Math.random()*30,1+Math.random()*2);}},[1,1]);
-    h.encoding=TH.LinearEncoding;h.wrapS=h.wrapT=TH.RepeatWrapping;m.roughnessMap=h;m.needsUpdate=true;}
+    h.encoding=TH.LinearEncoding;h.wrapS=h.wrapT=TH.RepeatWrapping;m.roughnessMap=null;m.needsUpdate=true;}
   if(E.pisoM){E.pisoM.roughness=.86;E.pisoM.envMapIntensity=.55;}
   // resplandor anaranjado de Bahía Blanca en el horizonte y bruma alrededor de las luces
   const cielo=new TH.Mesh(new TH.SphereGeometry(950,32,16),new TH.ShaderMaterial({side:TH.BackSide,depthWrite:false,fog:false,transparent:true,

@@ -401,8 +401,11 @@ function tyVolanteYo(R,e,c){const man=(S.tyVol||"auto")==="manual";
 function tyChoque(R,e,tipo,imp,otro){if(e.out)return;if(e.yo&&!R.c.entreno&&!R.c.vivo)pzGolpe((tipo==="rueda"||(tipo==="pared"&&imp>2.3))?"vuelco":tipo,imp||0);if(R.c.entreno){e.v*=.25;e.sa=0;e.vl=0;e.th=0;if(e.yo){tyMsg(tipo==="trompo"?"¡Trompo! Levantá el pie en la curva":"¡Golpe! Seguí practicando","#ff8f9c");vib(80);}R.entTrompos=(R.entTrompos|0)+1;return;}
   if(R.c.sufi&&e.yo)R.sufFalla=tipo;
   // trompo (o quedarse parado): no descalifica, relarga último en la fila. Solo la rotura o el vuelco te dejan afuera
-  if(tipo==="trompo"&&!R.c.sufi&&!R.c.vivo){e.pen=true;e.v*=.35;e.vl=0;e.th=0;tySonido("toque",.7);R.choques++;
-    if(e.yo){vib([60,40,60]);tyMsg("¡Trompo! No quedás afuera: relargás último en la fila","#ffb4bd");}
+  // el segundo trompo del mismo piloto que para la carrera lo deja excluido
+  const roja2=R.green&&!R.done&&R.cars.filter(x=>!x.out&&x.fin===null).length>1;
+  if(tipo==="trompo"&&roja2&&(e.trompos|0)>=1&&!R.c.sufi&&!R.c.vivo){if(e.yo)setTimeout(()=>{if(TYR===R)tyMsg("¡Segundo trompo con bandera roja: quedás excluido!","#ff8f9c");},400);}
+  else if(tipo==="trompo"&&!R.c.sufi&&!R.c.vivo){if(roja2)e.trompos=(e.trompos|0)+1;e.pen=true;e.v*=.35;e.vl=0;e.th=0;tySonido("toque",.7);R.choques++;
+    if(e.yo){vib([60,40,60]);tyMsg("¡Trompo! Relargás último. Otro trompo con bandera roja y quedás excluido","#ffb4bd");}
     if(!R.narChoqueT||R.t-R.narChoqueT>3){R.narChoqueT=R.t;narraF("trompo",{a:e});}
     if(R.green&&!R.done&&R.cars.filter(x=>!x.out&&x.fin===null).length>1){R.green=false;R.roja={t:5};R.cars.forEach(x=>{if(!x.out){x.vl=0;}});
       setTimeout(()=>{if(TYR===R){tyMsg("¡BANDERA ROJA! "+(e.yo?"Relargás último":e.n+" relarga último"),"#ff8f9c");narraF("roja",{});}},1500);}
@@ -759,7 +762,7 @@ function tyDraw(R){const cv=$("#tyScene");if(!cv)return;const dpr=prUltra(Math.m
   const ctx=cv.getContext("2d"),w=cv.width,h=cv.height,E=TY3.env;ctx.clearRect(0,0,w,h);
   if(R.g3&&E&&w>0){const TH=T3.TH,ren=T3.ren,dt=R.dt||.016,tt=performance.now()/1000;
     for(const e of R.cars){if(e.g)continue;if(TY3.mod[e.m]){const o=tyAutoObj(e);if(o){E.sc.add(o);E.cars.push(o);e.g=o;}}else if(!TY3.mod["_"+e.m]&&(!R.reintT||tt-R.reintT>4)){R.reintT=tt;tyModelo(e.m).catch(()=>{});}}
-    for(const e of R.cars){if(!e.g)continue;e.g.visible=!e.gone;const p=tyPose(e.s,e.d),g=e.g,piv=g.userData.piv;g.position.set(p.x,tyYc(e.s,e.d),p.z);
+    for(const e of R.cars){if(!e.g)continue;e.g.visible=!e.gone;const p=tyPose(e.s,e.d),g=e.g,piv=g.userData.piv;g.position.set(p.x,R.c.entreno?.015:tyYc(e.s,e.d),p.z);
       // el auto apunta hacia adentro de la curva cuando derrapa (cola afuera); con el vuelco gira y da tumbos
       let yaw=p.h+e.sa;if(e.out)yaw=p.h+e.sa;g.rotation.set(0,yaw,0);
       if(e.vuelco){ /* vuelco de verdad: sale despedido, da vueltas de campana, rebota contra la tierra y queda donde cae */
@@ -768,7 +771,7 @@ function tyDraw(R){const cv=$("#tyScene");if(!cv)return;const dpr=prUltra(Math.m
         if(T.y<0){T.y=0;if(Math.abs(T.vy)>1.4){T.vy=-T.vy*.36;T.wx*=.62;T.wz*=.5;T.polvo=.35;tySonido("toque",.5);}else{T.vy=0;T.wx*=.86;T.wz*=.8;const tg=Math.round(T.rx/Math.PI)*Math.PI;T.rx+=(tg-T.rx)*Math.min(1,d*5);T.rz+=(0-T.rz)*Math.min(1,d*4);}}
         piv.rotation.x=T.rx;piv.rotation.z=T.rz;piv.position.y=T.y+.55*Math.abs(Math.sin(T.rx));
         if(T.polvo>0){T.polvo-=d;for(let q=0;q<3;q++)tyPolvoEmite(E,g,yaw,{v:22,sa:1,th:1},.05);}}
-      else{piv.rotation.z=e.pitch+(e.th>.6&&e.v<14?Math.sin(tt*40)*.006:0);piv.rotation.x=-tyBank(e.s)*.1;piv.position.y=0;}
+      else{piv.rotation.z=e.pitch+(e.th>.6&&e.v<14?Math.sin(tt*40)*.006:0);piv.rotation.x=R.c.entreno?0:-tyBank(e.s)*.1;piv.position.y=0;}
       if(!e.gone&&!e.out&&e.v>5)tyPolvoEmite(E,g,yaw,e,dt);}
     tyPolvoPaso(E,dt);
     // banderas
