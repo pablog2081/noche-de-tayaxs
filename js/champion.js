@@ -16,9 +16,10 @@ function tyBandS(){const a=TY.S/2,arc=Math.PI*TY.R,L=TY.LAP,out=[];for(const c0 
 function tyBermaArmar(TH,sc,E){const L=TY.LAP;
   const b=new TH.Mesh(tyBermaGeo(TH,TY_BERMA_D,1.1,.32,0,L,1.2),tyTierraMat(TH));b.receiveShadow=true;b.castShadow=true;sc.add(b);E.berma=b;
   // banderines: caña blanca y banderita roja/amarilla
-  const caña=new TH.CylinderGeometry(.025,.03,1.1,6);caña.translate(0,.55,0);const tela=new TH.PlaneGeometry(.42,.26);tela.translate(.21,0,0);
+  // la mitad de alto que antes (55 cm) y la banderita triangular
+  const caña=new TH.CylinderGeometry(.018,.022,.55,6);caña.translate(0,.275,0);const tela=new TH.BufferGeometry();tela.setAttribute("position",new TH.Float32BufferAttribute([0,.08,0,0,-.08,0,.3,0,0],3));tela.computeVertexNormals();
   const mC=new TH.MeshStandardMaterial({color:0xf2f2f2,roughness:.6}),mR=new TH.MeshStandardMaterial({color:0xd7263d,roughness:.7,side:TH.DoubleSide}),mA=new TH.MeshStandardMaterial({color:0xf2c230,roughness:.7,side:TH.DoubleSide});
-  E.band=tyBandS().map((s,i)=>{const q=tyPose(s,TY_BAND_D),g=new TH.Group();g.add(new TH.Mesh(caña,mC));const f=new TH.Mesh(tela,i%2?mA:mR);f.position.y=.95;g.add(f);
+  E.band=tyBandS().map((s,i)=>{const q=tyPose(s,TY_BAND_D),g=new TH.Group();g.add(new TH.Mesh(caña,mC));const f=new TH.Mesh(tela,i%2?mA:mR);f.position.y=.46;g.add(f);
     g.position.set(q.x,tyY(s,TY_BAND_D),q.z);g.rotation.y=q.h;sc.add(g);return {s,g,f};});}
 // cada carrera los banderines arrancan parados
 {const _s3=tySetup3D;tySetup3D=function(R){const r=_s3.apply(this,arguments);try{const E=TY3.env;R.bandT={};if(E&&E.band)E.band.forEach(b=>{b.g.rotation.x=0;b.g.rotation.z=0;b.caido=false;});}catch(x){}return r;};}

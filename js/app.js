@@ -1,5 +1,5 @@
 /* Noche de TAYA'xs — pantalla principal (PC) */
-const BUILD="19";
+const BUILD="20";
 function hud(){$("#hPesos").textContent=fmt(S.pesos);$("#hApodo").textContent=S.apodo?"Piloto: "+S.apodo:"";$("#bMute").textContent=muted?"🔇":"🔊";}
 function render(){hud();const m=$("#main");m.innerHTML="";
   if(!S.apodo){m.append(bienvenida());return;}

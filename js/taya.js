@@ -596,9 +596,7 @@ function tyBuild(){const TH=T3.TH,sc=new TH.Scene(),E={sc,flags:[]};const L=TY.L
     const g=new TH.BufferGeometry();g.setAttribute("position",new TH.Float32BufferAttribute(pts,3));g.setAttribute("uv",new TH.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const m=new TH.Mesh(g,mat);sc.add(m);return m;};
   for(let i=0;i<48;i++){const s=i*L/48+4;if(tyEnPuerta(s-4.2)||tyEnPuerta(s+4.2)||tyEnPuerta(s))continue;const t=ADS[i%ADS.length],mat=new TH.MeshBasicMaterial({map:ad(t),side:TH.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2});
     cartelPared(s-4.1,8.2,TY.W/2+.065,mat,false);cartelPared(s-4.1,8.2,TY.W/2+.135,mat,true);}
-  // línea de llegada
-  {const chk=dTex(256,32,(x,w,h)=>{for(let i=0;i<16;i++)for(let j=0;j<2;j++){x.fillStyle=(i+j)%2?"#111":"#f4f4f4";x.fillRect(i*16,j*16,16,16);}});
-    const fl=new TH.Mesh(new TH.PlaneGeometry(1.2,TY.W),new TH.MeshBasicMaterial({map:chk}));fl.rotation.x=-Math.PI/2;fl.rotation.z=Math.PI/2;fl.position.set(0,.06,TY.R);sc.add(fl);}
+  // la línea de largada y los cajones son de cal (js/pista.js)
   // tribunas con público e hinchas con banderas
   const ROPA=[0xd7d7d7,0x1d3557,0xc0392b,0xf2c230,0x2e86c1,0x111111,0x27ae60,0xe67e22,0x7ec8e3,0xffffff,0x6c2a8a,0x8d6e3b],PIEL=[0xf1c9a5,0xe0ac80,0xc68a5a,0x9a6440,0xf6d6b8];
   const per=[],banderas=[];const concrete=std({color:0x9d988c,roughness:.9}),roofR=std({color:0x9c2a20,roughness:.6}),roofG=std({color:0x8c9096,roughness:.5,metalness:.4});
