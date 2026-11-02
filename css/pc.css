@@ -179,3 +179,13 @@ body.pc #tyRace .typos b{font-size:34px}
 .champov{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:14px;padding:10px 16px;border-radius:14px;background:rgba(8,10,16,.75);border:1px solid var(--oro);color:var(--crema);font:600 15px var(--f-ui)}
 .champov b{font:400 22px var(--f-display);color:var(--oro)}.champov .btn{width:auto}
 body.champrun #tyRace>*:not(#tyScene){visibility:hidden}
+/* presentación de la final y vuelta de honor */
+#tyPres{position:absolute;left:50%;bottom:27%;transform:translateX(-50%);background:linear-gradient(90deg,rgba(10,12,18,.92),rgba(30,22,8,.92));border:2px solid var(--oro);border-radius:12px;padding:10px 22px;text-align:center;pointer-events:none;z-index:6;opacity:0}
+#tyPres.on{animation:tyPresIn .5s ease-out forwards}
+#tyPres small{display:block;color:var(--oro);font:700 15px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase}
+#tyPres b{display:block;font:400 30px 'Alfa Slab One',serif;color:#f3e9d2;white-space:nowrap}
+#tyPres b span{display:inline-block;padding:0 10px;border-radius:6px;color:#111;margin-right:6px;font-family:'Barlow Condensed',sans-serif;font-weight:900}
+@keyframes tyPresIn{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
+#tyHonor{position:absolute;left:50%;top:5%;transform:translateX(-50%);background:rgba(10,12,18,.8);border:2px solid var(--oro);border-radius:12px;padding:8px 22px;text-align:center;pointer-events:none;z-index:6}
+#tyHonor b{display:block;font:400 26px 'Alfa Slab One',serif;color:var(--oro)}
+#tyHonor span{font:700 16px 'Barlow Condensed',sans-serif;color:#f3e9d2}

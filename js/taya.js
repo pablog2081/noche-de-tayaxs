@@ -801,11 +801,11 @@ function tyDraw(R){const cv=$("#tyScene");if(!cv)return;const dpr=prUltra(Math.m
   if(R.roja){ctx.fillStyle="rgba(200,20,30,.85)";ctx.fillRect(0,h*.42,w,h*.1);ctx.fillStyle="#fff";ctx.font=`900 ${Math.round(h*.06)}px 'Barlow Condensed',sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("BANDERA ROJA",w/2,h*.47);ctx.textBaseline="alphabetic";}
   // torre de posiciones
   const pos=R.pos.length?R.pos:tyPosiciones(R),yo=pos.indexOf(R.P),cssK=w/(ctx.canvas.clientWidth||w),fs=Math.round(Math.max(13*cssK,Math.min(h*.032,w*.045))),top0=Math.max(h*.12,(58*cssK)+fs);ctx.font=`700 ${fs}px "Barlow Condensed",sans-serif`;
-  const show=pos.slice(0,5);if(yo>=5)show.push(R.P);const bw=Math.min(w*.62,fs*13.5);
+  const cine=!!((R.anim&&R.anim.cine)||R.champ),show=cine?[]:pos.slice(0,5);if(yo>=5&&!cine)show.push(R.P);const bw=Math.min(w*.62,fs*13.5);
   show.forEach((e,i)=>{const k=pos.indexOf(e),y=top0+i*fs*1.25;ctx.fillStyle=e.yo?"rgba(242,182,50,.92)":"rgba(10,12,18,.72)";ctx.fillRect(8,y-fs,bw,fs*1.15);
     ctx.fillStyle=e.yo?"#111":"#f3e9d2";ctx.textAlign="left";ctx.fillText(`${k+1}  #${e.num} ${e.n}`.slice(0,21),14,y);
     ctx.textAlign="right";ctx.fillStyle=e.yo?"#111":"#9fd3ff";ctx.fillText(e.out?"OUT":k===0?"":"+"+Math.max(0,(pos[0].dist-e.dist)/Math.max(8,e.v)).toFixed(1),8+bw-6,y);ctx.textAlign="left";});
-  {const yv=top0+show.length*fs*1.25+fs*.35,lp=Math.min(R.laps,Math.max(1,Math.floor(Math.max(0,R.P.dist)/TY.LAP)+1));ctx.fillStyle="rgba(242,182,50,.92)";ctx.fillRect(8,yv-fs,bw,fs*1.2);
+  if(!cine){const yv=top0+show.length*fs*1.25+fs*.35,lp=Math.min(R.laps,Math.max(1,Math.floor(Math.max(0,R.P.dist)/TY.LAP)+1));ctx.fillStyle="rgba(242,182,50,.92)";ctx.fillRect(8,yv-fs,bw,fs*1.2);
     ctx.fillStyle="#111";ctx.font=`900 ${fs}px "Barlow Condensed",sans-serif`;ctx.textAlign="center";ctx.fillText(R.green||R.done?`VUELTA ${lp} DE ${R.laps}${lp===R.laps&&R.green?" · ÚLTIMA":""}`:`${R.laps} VUELTAS`,8+bw/2,yv);ctx.textAlign="left";}
   if(!R.green&&!R.done&&!R.roja&&!R.podio&&!R.anim)tyPlacaGrilla(ctx,w,h,R,cssK);
   const P=R.P,lap=Math.min(R.laps,Math.max(1,Math.floor(P.dist/TY.LAP)+1));
@@ -877,7 +877,7 @@ function narraF(k,p){p=p||{};if(typeof TYR!=="undefined"&&TYR&&TYR.c.entreno)ret
   if(!(muted||noVoz||!AC)){narLoadF();const it={clips,prio,t:performance.now()};if(prio){NARF.q=NARF.q.filter(x=>x.prio);NARF.q.push(it);}else if(NARF.q.length<1&&!(NARF.busy&&k==="pasa"))NARF.q.push(it);narPlayF();}
   if(TYR)tyMsg("🎙️ "+txt.join(" ").replace(/ ([,!.])/g,"$1"),"var(--celeste)");}
 function narLoadF(){if(NARF.buf||NARF.loading||!AC)return;NARF.loading=true;
-  Promise.all([fetch("taya/relato.json?v=70").then(r=>r.json()),fetch("taya/relato.mp3?v=70").then(r=>r.arrayBuffer())]).then(([m,ab])=>{NARF.map=m;return new Promise((res,rej)=>AC.decodeAudioData(ab,res,rej));}).then(b=>{NARF.buf=b;narPlayF();}).catch(()=>{NARF.loading=false;});}
+  Promise.all([fetch("taya/relato.json?v=71").then(r=>r.json()),fetch("taya/relato.mp3?v=71").then(r=>r.arrayBuffer())]).then(([m,ab])=>{NARF.map=m;return new Promise((res,rej)=>AC.decodeAudioData(ab,res,rej));}).then(b=>{NARF.buf=b;narPlayF();}).catch(()=>{NARF.loading=false;});}
 function narPlayF(){if(NARF.busy||!NARF.q.length||!NARF.buf||!AC)return;const it=NARF.q.shift();if(!it.prio&&performance.now()-it.t>2500){narPlayF();return;}const cl=it.clips.filter(c=>c&&NARF.map[c]);if(!cl.length){narPlayF();return;}
   NARF.busy=true;if(!NARF.gain){NARF.gain=AC.createGain();NARF.gain.gain.value=1.2*VOL.rel;NARF.gain.connect(AC.destination);}
   let t=AC.currentTime+.03;const srcs=[];cl.forEach((c,i)=>{const [o,d]=NARF.map[c];const s=AC.createBufferSource(),g=AC.createGain();s.buffer=NARF.buf;
