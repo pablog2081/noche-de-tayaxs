@@ -50,7 +50,7 @@ function tyPilotoObj(e){const TH=T3.TH,g=new TH.Group();const h=Math.abs(Math.si
 {const _ao=tyAutoObj;tyAutoObj=function(e){const src=TY3.mod[e.m];if(src&&TY_M.includes(e.m)&&!src.userData.ruedas){try{tyRuedasPrep(e.m,src);}catch(x){console.warn("ruedas",x);}}
   const g=_ao.apply(this,arguments);if(!g||!src||!src.userData.ruedas)return g;
   try{const piv=g.userData.piv,R=src.userData.ruedas.map(tyRuedaObj);R.forEach(r=>piv.add(r.piv));g.userData.ruedas=R;
-    const pil=tyPilotoObj(e),tras=src.userData.ruedas.filter(w=>!w.del);if(tras.length)pil.position.x=tras.reduce((a,w)=>a+w.x,0)/tras.length+.48;piv.add(pil);g.userData.piloto=pil;
+    tyPilotoPoner(g,e,src);
     const sh=g.children.find(c=>c.isMesh&&c.geometry&&c.geometry.type==="PlaneGeometry");if(sh)g.userData.sombra=sh;}catch(x){console.warn("ruedas2",x);}
   return g;};}
 // cada cuadro: giran según la velocidad; las delanteras apuntan hacia donde va el auto (contravolante en el derrape)
@@ -61,3 +61,22 @@ function tyRuedasPaso(R){const dt=Math.min(.05,R.dt||.016);
     for(const w of g.userData.ruedas){w.giro.rotation.z=-ang/w.r;if(w.del)w.piv.rotation.y+=(dir-w.piv.rotation.y)*Math.min(1,dt*10);}
     const sh=g.userData.sombra;if(sh){const piso=R.c.entreno||e.vuelco?0:-tyBank(e.s)*.1;sh.rotation.x=-Math.PI/2+piso;}}}
 {const _dr=tyDraw;tyDraw=function(R){try{if(R&&R.cars)tyRuedasPaso(R);}catch(x){}return _dr.apply(this,arguments);};}
+
+/* el piloto de Meshy (sentado, con el volante): se acomoda en el habitáculo de cada chasis, más chico si la jaula es baja */
+let TY_PIL_CARGA=null;
+function tyPilotoCargar(){if(!TY_PIL_CARGA)TY_PIL_CARGA=tyModelo("pil",1.15).catch(()=>{TY_PIL_CARGA=null;});return TY_PIL_CARGA;}
+function tyPilotoMeshy(e,src){const TH=T3.TH,P=TY3.mod.pil;if(!P)return null;const o=P.clone(true);o.rotation.y=Math.PI;
+  const tint=new TH.Color(1,1,1).lerp(new TH.Color(e.col||"#ffffff"),.28);
+  o.traverse(q=>{if(q.isMesh){q.castShadow=true;q.material=q.material.clone();q.material.color=tint;}});
+  const g=new TH.Group();g.add(o);
+  const bb=new TH.Box3().setFromObject(src),top=bb.max.y,asiento=.27,k=Math.max(.78,Math.min(1,(top-.14-asiento)/.8));g.scale.setScalar(k);
+  const tras=src.userData.ruedas.filter(w=>!w.del),xr=tras.length?tras.reduce((a,w)=>a+w.x,0)/tras.length:-.8;
+  g.position.set(xr+.45+.375*k,asiento,0);g.userData.meshy=true;return g;}
+function tyPilotoPoner(g,e,src){const piv=g.userData.piv;if(g.userData.piloto){piv.remove(g.userData.piloto);g.userData.piloto=null;}
+  let pil=null;try{pil=tyPilotoMeshy(e,src);}catch(x){}
+  if(!pil){tyPilotoCargar();pil=tyPilotoObj(e);const tras=src.userData.ruedas.filter(w=>!w.del);if(tras.length)pil.position.x=tras.reduce((a,w)=>a+w.x,0)/tras.length+.48;g.userData.pilProc=true;}
+  else g.userData.pilProc=false;
+  pil.userData.e=e;piv.add(pil);g.userData.piloto=pil;}
+{const _rp=tyRuedasPaso;tyRuedasPaso=function(R){_rp.apply(this,arguments);if(!TY3.mod.pil)return;
+  for(const e of R.cars){const g=e.g;if(g&&g.userData.pilProc&&TY3.mod[e.m]){const vis=g.userData.piloto?g.userData.piloto.visible:true;tyPilotoPoner(g,e,TY3.mod[e.m]);g.userData.piloto.visible=vis;}}};}
+try{init3D().then(ok=>{if(ok)tyPilotoCargar();});}catch(x){}

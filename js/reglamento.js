@@ -66,3 +66,13 @@ function vTaller(){const m=$("#main"),T=tyPz(),cerrado=!!S.tayaJ;m.innerHTML="";
 function tyTallerHacer(x,sinChk){const T=tyPz();if(S.tayaJ){toast("Con la noche empezada el taller está cerrado");return false;}
   const st=x.stock&&T.stock[x.stock]>0,p=st?12000:x.p;if(S.pesos<p){if(!sinChk)toast("No te alcanza la plata: pasá por el kiosco");return false;}
   S.pesos-=p;if(st)T.stock[x.stock]--;x.hace(T);return true;}
+
+/* ---------- la pista se gasta: arranca pareja y cada carrera la marca más; la Champion la deja perfecta antes de la semi 1 y la 3 ---------- */
+const TY_PISTA_PASO=.065;
+function tyPistaDesg(c){if(!c||c.entreno)return 0;const e=c.etapa||c,n=(e.n|0)||1;
+  const k=e.k==="serie"?n-1:e.k==="repe"?16+n-1:e.k==="semi"?(n-1)%2:e.k==="pre"?2:e.k==="final"?3:e.k==="sufi"?0:2;
+  return Math.min(1,k*TY_PISTA_PASO);}
+{const _s3=tySetup3D;tySetup3D=function(R){const r=_s3.apply(this,arguments);try{if(!R.c.entreno){const w=tyPistaDesg(R.c),E=TY3.env;R.desgPista=w;
+    if(E&&E.huella){const m=E.huella.material;m.opacity=w*.62;m.color.setHex(0x2a1b10);E.huella.visible=w>.01;}
+    R.cars.forEach(e=>{e.mu*=1-.05*w;});
+    const et=R.c.etapa||R.c;if(et.k==="semi"&&((et.n|0)===1||(et.n|0)===3))setTimeout(()=>{if(TYR===R)tyMsg("Pasó la Champion: la pista quedó perfecta para las semis","var(--oro)");},2500);}}catch(x){console.warn("pista",x);}return r;};}

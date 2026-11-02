@@ -171,7 +171,7 @@ function tyCerrarNoche(J){const T=tyState(),P=tyPuntosNoche(J);T.fecha++;T.ganF=
     msg+=`Sumaste ${P.yo|0} puntos esta noche.${plata?" Cobraste "+fmt(plata)+".":""}`;}
   // después de la fecha 12: los 12 primeros al playoff, el resto a la Copa de Plata. Cada 2 fechas el playoff se achica a 8 y a 4
   if(T.fecha===TY_REG&&!T.po){const tab=tyTabla(),top=tab.slice(0,12).map(r=>r.id);T.po={vivos:top,todos:top.slice(),pts:{}};top.forEach(id=>T.po.pts[id]=0);
-    T.cp={ids:tab.slice(12).map(r=>r.id),pts:{}};
+    T.cp={ids:tab.slice(12).map(r=>r.id),pts:{}};T.cp.ids.forEach(id=>T.cp.pts[id]=T.pts[id]|0); /* la Copa de Plata arrastra los puntos de la temporada regular */
     msg+=top.includes("yo")?" ¡Entraste al playoff de los 12!":" No entraste al playoff: seguís en la Copa de Plata.";}
   else if(T.po&&(T.fecha===TY_REG+2||T.fecha===TY_REG+4)){const keep=T.fecha===TY_REG+2?8:4;const orden=T.po.vivos.slice().sort((a,b)=>(T.po.pts[b]|0)-(T.po.pts[a]|0));
     const out=orden.slice(keep);T.po.vivos=orden.slice(0,keep);if(T.po.vivos.includes("yo"))msg+=` ¡Pasaste el corte! Quedan ${keep}.`;else if(out.includes("yo"))msg+=" Quedaste afuera del playoff en este corte.";}
@@ -226,13 +226,13 @@ function tyGarage(J,onClose){const T=tyState();if(!TY3.mod[T.m]){toast("Llevando
   const car=tyAutoObj({m:T.m,col:T.col,num:T.num,spon:S.apodo||""});car.position.y=.24;G.add(car);
   for(const [x,z] of [[1,.62],[1,-.62],[-1,.62],[-1,-.62]]){const c=new TH.Mesh(new TH.BoxGeometry(.18,.24,.18),std({color:0xc0392b,metalness:.4,roughness:.5}));c.position.set(x,.12,z);G.add(c);}
   const goma=()=>{const g=new TH.Mesh(new TH.TorusGeometry(.3,.13,10,20),std({color:0x161616,roughness:.95}));g.rotation.x=Math.PI/2;return g;};
-  const pila=new TH.Group();for(let i=0;i<4;i++){const g=goma();g.position.y=.13+i*.27;pila.add(g);}pila.position.set(-1.7,0,1.15);G.add(pila);
-  const nuevas=new TH.Group();for(let i=0;i<4;i++){const g=goma();g.material=std({color:0x0b0b0b,roughness:.6});g.position.y=.13+i*.27;nuevas.add(g);}nuevas.position.set(-1.7,0,-1.15);nuevas.visible=false;G.add(nuevas);
-  const tabla=new TH.Mesh(new TH.BoxGeometry(.06,1.2,2.2),std({color:0x5d4037,roughness:.9}));tabla.position.set(-2.2,1.6,0);G.add(tabla);
-  for(let i=0;i<6;i++){const h=new TH.Mesh(new TH.BoxGeometry(.04,.4+.1*(i%3),.06),std({color:0xbdc3c7,metalness:.8,roughness:.3}));h.position.set(-2.15,1.6,-.9+i*.36);G.add(h);}
+  const pila=new TH.Group();for(let i=0;i<4;i++){const g=goma();g.position.y=.13+i*.27;pila.add(g);}pila.position.set(-1.9,0,1.5);G.add(pila);
+  const nuevas=new TH.Group();for(let i=0;i<4;i++){const g=goma();g.material=std({color:0x0b0b0b,roughness:.6});g.position.y=.13+i*.27;nuevas.add(g);}nuevas.position.set(1.6,0,-1.5);nuevas.visible=false;G.add(nuevas);
+  // estanterías con repuestos y el banco con el tablero de herramientas (modelos de Meshy)
+  tyModelo("box/banco",1.6).then(m=>{if(!G.parent)return;const o=m.clone(true);o.rotation.y=-Math.PI/2;o.position.set(-1.98,0,.25);o.traverse(q=>{if(q.isMesh){q.castShadow=true;q.receiveShadow=true;q.material.side=T3.TH.DoubleSide;q.material.transparent=false;q.material.alphaTest=0;}});G.add(o);}).catch(()=>{});
+  tyModelo("box/estante",1.2).then(m=>{if(!G.parent)return;for(const [x,z,ry] of [[-1.2,-1.85,0],[.3,-1.85,0]]){const o=m.clone(true);o.rotation.y=ry;o.position.set(x,0,z);o.traverse(q=>{if(q.isMesh)q.castShadow=true;});G.add(o);}}).catch(()=>{});
   const lamp=new TH.PointLight(0xffe2b0,1.3,14,2);lamp.position.set(0,3.6,0);lamp.castShadow=ultra();G.add(lamp);
-    let meca=null;tyPersona("piloto",1.74).then(()=>{if(!G.parent)return;meca=tyPilotoReal(TH,"t1");if(!meca)return;meca.traverse(q=>{if(q.isMesh&&q.material.onBeforeCompile){const c=new TH.Color(0x2b3a55);q.material.onBeforeCompile=(sh=>{sh.uniforms.uTint={value:c};sh.fragmentShader="uniform vec3 uTint;\n"+sh.fragmentShader.replace("#include <map_fragment>","#include <map_fragment>\n{vec3 c=diffuseColor.rgb;float l=max(c.r,max(c.g,c.b)),sat=l-min(c.r,min(c.g,c.b));float w=smoothstep(.5,.78,l)*(1.-smoothstep(.07,.2,sat));diffuseColor.rgb=mix(c,uTint*l*1.1,w);}");});q.material.needsUpdate=true;}});
-    meca.position.set(1.9,0,-1.0);meca.rotation.y=-1.2;G.add(meca);}).catch(()=>{});
+  let meca=null;if(car.userData.piloto)car.userData.piloto.visible=false; /* en el box el auto está solo, sin piloto ni mecánico */
   const cam=new TH.PerspectiveCamera(50,1,.1,600);
   const ov=el(`<div id="tyGar"><canvas id="tyGarC"></canvas><div class="tgtop"><b>🔧 Box · ${esc(TY_HUMAN[T.m]||"")} #${T.num}</b><span id="tgMsg">Revisá las gomas y el motor antes de la próxima carrera</span></div><div class="tgpanel" id="tgPanel"></div><button class="btn oro tgvolver" id="tgVolver">Volver</button></div>`);
   document.body.append(ov);let fin=false,t0=performance.now(),anim=null;
@@ -241,8 +241,8 @@ function tyGarage(J,onClose){const T=tyState();if(!TY3.mod[T.m]){toast("Llevando
   const panel=()=>{const p=$("#tgPanel");p.innerHTML="";const bx=tyBox(J,()=>{},accion);p.append(bx());};panel();
   const cerrar=()=>{if(fin)return;fin=true;E.sc.remove(G);ov.remove();onClose&&onClose();};$("#tgVolver").onclick=cerrar;
   const loop=now=>{if(fin)return;const cv=$("#tyGarC"),dpr=prUltra(Math.min(2,devicePixelRatio||1)),w=Math.round(cv.clientWidth*dpr),h=Math.round(cv.clientHeight*dpr);if(!w||!h){requestAnimationFrame(loop);return;}
-    if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}const tt=(now-t0)/1000,ang=Math.sin(tt*.22)*.75,r=w<h?6.4:5.2;
-    const lp=new TH.Vector3(Math.cos(ang)*r,2.3+Math.sin(tt*.3)*.2,Math.sin(ang)*r);G.localToWorld(lp);cam.position.copy(lp);const tg=new TH.Vector3(0,.7,0);G.localToWorld(tg);cam.lookAt(tg);cam.aspect=w/h;cam.fov=w<h?62:46;cam.updateProjectionMatrix();
+    if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}const tt=(now-t0)/1000; /* cámara fija en la entrada del box, mirando al auto */
+    const lp=new TH.Vector3(w<h?5.6:4.6,2.05,w<h?2.6:2.1);G.localToWorld(lp);cam.position.copy(lp);const tg=new TH.Vector3(-.5,.75,0);G.localToWorld(tg);cam.lookAt(tg);cam.aspect=w/h;cam.fov=w<h?62:46;cam.updateProjectionMatrix();
     if(anim){const k=(now-anim.t)/1000;car.position.y=.24+(anim.k==="gomas"&&k<1.6?Math.abs(Math.sin(k*14))*.015:0);if(meca)meca.rotation.y=-1.2+Math.sin(k*6)*.3*(k<1.6?1:0);if(k>1.8)anim=null;}
     const ren=T3.ren;if(ren.domElement.width!==w||ren.domElement.height!==h)ren.setSize(w,h,false);ren.setClearColor(0x05070d,1);ren.render(E.sc,cam);const ctx=cv.getContext("2d");ctx.drawImage(ren.domElement,0,0,w,h);cineFX(ctx,w,h,"noche");
     requestAnimationFrame(loop);};requestAnimationFrame(loop);}

@@ -171,7 +171,7 @@ vTaya=function(m){_vTayaBase(m);try{const card=[...m.querySelectorAll(".copa")].
 /* ---------- tierra regada que brilla, cielo con el resplandor de la ciudad ---------- */
 function tyNocheReal(E){const TH=T3.TH,sc=E.sc;
   // la huella de carrera: tierra húmeda y apisonada que refleja las torres
-  if(E.huella){const m=E.huella.material;m.roughness=.95;m.metalness=0;m.envMapIntensity=.12;m.color.setHex(0x34241a);m.opacity=.5;
+  if(E.huella){const m=E.huella.material;m.roughness=.95;m.metalness=0;m.envMapIntensity=.12;m.color.setHex(0x2a1b10);m.opacity=0;
     const h=dTex(512,128,(x,w,hh)=>{x.fillStyle="#fff";x.fillRect(0,0,w,hh);for(let i=0;i<500;i++){x.fillStyle=`rgba(0,0,0,${Math.random()*.35})`;x.fillRect(Math.random()*w,Math.random()*hh,2+Math.random()*30,1+Math.random()*2);}},[1,1]);
     h.encoding=TH.LinearEncoding;h.wrapS=h.wrapT=TH.RepeatWrapping;m.roughnessMap=null;m.needsUpdate=true;}
   if(E.pisoM){E.pisoM.roughness=.86;E.pisoM.envMapIntensity=.55;}

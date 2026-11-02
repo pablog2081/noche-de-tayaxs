@@ -174,7 +174,7 @@ function mjCorrer(d){const c=d.c;document.querySelectorAll(".typlaca").forEach(x
   const ids=c.ids.map(id=>mjH(id)?(id.slice(2)===TYV.me?"yo":"p_"+id.slice(2)):id);
   const yoNum=d.J.info["h_"+TYV.me];if(yoNum)TYV.miNum=yoNum.num;
   const vivo={t0:d.t0,host:d.rhost,mj:1,n:d.n,key:c.key,i:c.i,modo:TYV.modo,laps:c.laps};
-  const cc={k:"vivo",n:1,nom:(TYV.modo==="camp"?`Fecha ${d.J.fecha} · `:"")+c.nom,ids,laps:c.laps,vivo};
+  const cc={k:"vivo",n:1,nom:(TYV.modo==="camp"?`Fecha ${d.J.fecha} · `:"")+c.nom,ids,laps:c.laps,vivo,etapa:{k:c.k,n:c.i+1}};
   tyVivoPres({en:1,dist:0,d:0,v:0});tyLargar(cc,{vivo:true,yaPresento:true,res:{},fuera:false});}
 {const _vf=tyVivoFin;tyVivoFin=function(R){if(R&&R.c&&R.c.vivo&&R.c.vivo.mj)return mjFinCarrera(R);return _vf.apply(this,arguments);};}
 function mjFinCarrera(R){if(TYR!==R)return;const v=R.c.vivo,pos=tyPosiciones(R),yo=pos.findIndex(e=>e.yo);
