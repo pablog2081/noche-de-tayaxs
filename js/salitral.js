@@ -1,5 +1,5 @@
 /* Noche de TAYA'xs — modo entrenamiento: tu midget solo, en un óvalo marcado sobre un salitral, a la tarde.
-   La pista usa la misma geometría que el autódromo (así la física es la misma), pero en vez de paredón hay cubiertas. */
+   La pista usa la misma geometría que el autódromo (así la física es la misma), sin cubiertas: la marcan la huella y unas rocas. */
 function tySalTex(TH){const W=1024,G=9,cs=W/G,n=ruido2(W,W,5,31),cel=[];for(let gy=0;gy<G;gy++)for(let gx=0;gx<G;gx++)cel.push([(gx+.15+tyRnd(gx*7.1+gy*13.3)*.7)*cs,(gy+.15+tyRnd(gx*3.7+gy*5.9+1)*.7)*cs]);
   // costra de sal: placas poligonales (celdas de Voronoi en una grilla) con bordes levantados más oscuros
   const c=document.createElement("canvas");c.width=c.height=W;const x=c.getContext("2d"),d=x.createImageData(W,W),hg=new Float32Array(W*W);
@@ -41,12 +41,18 @@ function tyBuildSalitral(){const TH=T3.TH,sc=new TH.Scene(),E={sc,flags:[],sal:t
   huella.wrapS=TH.RepeatWrapping;huella.repeat.set(1,1);
   const pM=new TH.MeshStandardMaterial({map:huella,transparent:true,depthWrite:false,roughness:.8,polygonOffset:true,polygonOffsetFactor:-1});
   E.pisoM=pM;strip(-TY.W/2-.6,TY.W/2+.4,pM,.02);
-  // cubiertas pintadas marcando los bordes (afuera, pegadas; adentro, de a una cada tanto)
-  {const g=new TH.TorusGeometry(.42,.2,10,20),mB=new TH.MeshStandardMaterial({color:0x161616,roughness:.85}),mW=new TH.MeshStandardMaterial({color:0xf0ede4,roughness:.7}),mR=new TH.MeshStandardMaterial({color:0xc0392b,roughness:.7});
-    const afuera=[],adentro=[];for(let s=0;s<L;s+=1.05)afuera.push(s);for(let s=0;s<L;s+=6)adentro.push(s);
-    const poner=(lista,d,mat,cada)=>{const im=new TH.InstancedMesh(g,mat,lista.length*2),M=new TH.Matrix4(),Q=new TH.Quaternion(),X=new TH.Vector3(1,0,0);let i=0;
-      lista.forEach(s=>{const p=tyPose(s,d);for(let k=0;k<2;k++){Q.setFromAxisAngle(X,Math.PI/2);M.compose(new TH.Vector3(p.x,.2+k*.38,p.z),Q,new TH.Vector3(1,1,1));im.setMatrixAt(i++,M);}});im.castShadow=im.receiveShadow=true;sc.add(im);};
-    poner(afuera.filter((s,i)=>(i>>2)%2===0),TY.W/2+.55,mB);poner(afuera.filter((s,i)=>(i>>2)%2===1),TY.W/2+.55,mW);poner(adentro,-TY.W/2-.4,mR);}
+  // sin cubiertas: el óvalo queda marcado por la huella y por rocas puestas cada tanto en los dos bordes (más seguidas en las curvas)
+  {const arc=Math.PI*TY.R,curva=s=>{const u=(((s-TY.S/2)%L)+L)%L;return u<arc||(u>arc+TY.S&&u<2*arc+TY.S);};
+    const geos=[0,1,2,3].map(k=>{const g=new TH.IcosahedronGeometry(1,1),P=g.attributes.position,v=new TH.Vector3(),key=new Map();
+      for(let i=0;i<P.count;i++){v.fromBufferAttribute(P,i);const id=v.x.toFixed(3)+v.y.toFixed(3)+v.z.toFixed(3);if(!key.has(id))key.set(id,.72+tyRnd(i*7.3+k*31.7)*.5);const f=key.get(id);P.setXYZ(i,v.x*f,Math.max(-.35,v.y*f),v.z*f);}
+      g.computeVertexNormals();return g;});
+    const mat=new TH.MeshStandardMaterial({color:0xffffff,roughness:.95,flatShading:true});
+    const lista=[];for(const [d,lado] of[[TY.W/2+.75,1],[-TY.W/2-.7,0]])for(let s=0;s<L;){const c=curva(s);lista.push({s,d:d+(tyRnd(s*1.7+lado)-.5)*.35});s+=c?3.2+tyRnd(s+lado*9)*1.2:11+tyRnd(s*.3+lado)*4;}
+    const M=new TH.Matrix4(),Q=new TH.Quaternion(),E3=new TH.Euler(),C=new TH.Color(),por=geos.map(()=>[]);lista.forEach((r,i)=>por[i%4].push(r));
+    por.forEach((rs,k)=>{const im=new TH.InstancedMesh(geos[k],mat,rs.length);rs.forEach((r,i)=>{const p=tyPose(r.s,r.d),q=tyRnd(r.s*3.1+k),t=.22+q*.3;
+        E3.set((tyRnd(r.s+1)-.5)*.5,tyRnd(r.s*5.3)*6.3,(tyRnd(r.s+2)-.5)*.5);Q.setFromEuler(E3);M.compose(new TH.Vector3(p.x,t*.25,p.z),Q,new TH.Vector3(t*(1.1+q*.5),t*.75,t));im.setMatrixAt(i,M);
+        const g=.38+tyRnd(r.s*9.7)*.22;C.setRGB(g*1.05,g*.97,g*.88);im.setColorAt(i,C);});
+      im.castShadow=im.receiveShadow=true;sc.add(im);});}
   // línea de largada pintada con cal
   {const fl=new TH.Mesh(new TH.PlaneGeometry(.8,TY.W),new TH.MeshStandardMaterial({color:0xffffff,roughness:.6}));fl.rotation.x=-Math.PI/2;fl.rotation.z=Math.PI/2;fl.position.set(0,.04,TY.R);fl.receiveShadow=true;sc.add(fl);}
   // sierras lejanas, azuladas por la distancia
@@ -79,5 +85,5 @@ function tyFinEntreno(R){const E=R.ent||{vueltas:[]},T=tyState();if(E.mejor&&(!T
   $("#teOk").onclick=()=>{closeModal();render();};$("#teOtra").onclick=()=>{closeModal();tyEntreno();};}
 // tarjeta en la pantalla principal
 const _vTayaBase2=vTaya;
-vTaya=function(m){_vTayaBase2(m);const T=tyState();const c=el(`<div class="copa"><div class="row" style="justify-content:space-between;align-items:center;gap:10px"><div><div class="t">Entrenamiento en el salitral</div><div class="s">Tu midget solo, a la tarde, en un óvalo marcado con cubiertas sobre la sal. Sin rivales ni gastos: para aprender a manejar el derrape.${T.mejorSal?` Tu récord: ${T.mejorSal.toFixed(2)} s.`:""}</div></div><button class="btn" id="tyEnt0">Entrenar</button></div></div>`);
+vTaya=function(m){_vTayaBase2(m);const T=tyState();const c=el(`<div class="copa"><div class="row" style="justify-content:space-between;align-items:center;gap:10px"><div><div class="t">Entrenamiento en el salitral</div><div class="s">Tu midget solo, a la tarde, en un óvalo marcado con rocas sobre la sal. Sin rivales ni gastos: para aprender a manejar el derrape.${T.mejorSal?` Tu récord: ${T.mejorSal.toFixed(2)} s.`:""}</div></div><button class="btn" id="tyEnt0">Entrenar</button></div></div>`);
   const box=m.querySelector("#tyGo");const card=box?box.closest(".copa"):null;if(card)card.after(c);else m.append(c);c.querySelector("#tyEnt0").onclick=()=>tyEntreno();};

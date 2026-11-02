@@ -30,14 +30,16 @@ function tyBermaArmar(TH,sc,E){const L=TY.LAP;
       if(e.yo){tyMsg(`¡Tiraste un banderín! +3 s (${e.band})`,"#ffb4bd");vib(30);}}}};}
 
 /* ---------- la pasada de la Champion ---------- */
-function tyChampionToca(R){const c=R.c;if(!c||c.entreno||c.sufi||c.vivo)return false;const et=c.etapa||c;return et.k==="semi"&&((et.n|0)===1||(et.n|0)===3);}
+/* pasa antes de la semi 1 y de la semi 3: si corrés la 2 o la 4, ves la pasada que hubo antes de la tuya (la 1 o la 3) */
+function tyChampionToca(R){const c=R.c;if(!c||c.entreno||c.sufi||c.vivo)return false;const et=c.etapa||c;return et.k==="semi"&&(et.n|0)>=1;}
+function tyChampionPasada(R){const n=((R.c.etapa||R.c).n|0);return n<=2?1:3;}
 function tyChampionPrep(h){if(h.userData.prep)return;h.userData.prep=1;const TH=T3.TH,v=new TH.Vector3();h.updateMatrixWorld(true);
   const bb=new TH.Box3().setFromObject(h),x0=bb.max.x-(bb.max.x-bb.min.x)*.075; /* la pala de adelante va levantada: se suben esos vértices */
   h.traverse(q=>{if(!q.isMesh)return;const P=q.geometry.attributes.position,inv=new TH.Matrix4().copy(q.matrixWorld).invert(),w=new TH.Vector3();
     for(let i=0;i<P.count;i++){v.fromBufferAttribute(P,i).applyMatrix4(q.matrixWorld);if(v.x>x0&&v.y<1.3){v.y+=.22;w.copy(v).applyMatrix4(inv);P.setXYZ(i,w.x,w.y,w.z);}}
     P.needsUpdate=true;q.geometry.computeBoundingSphere();q.castShadow=true;});}
-{const _bs=tyBoxesSalida;tyBoxesSalida=function(R,cb){if(R&&R.g3!==false&&tyChampionToca(R)&&!(R.J&&R.J.champ&&R.J.champ[(R.c.etapa||R.c).n])){
-    if(R.J){R.J.champ=R.J.champ||{};R.J.champ[(R.c.etapa||R.c).n]=1;}
+{const _bs=tyBoxesSalida;tyBoxesSalida=function(R,cb){if(R&&R.g3!==false&&tyChampionToca(R)&&!(R.J&&R.J.champ&&R.J.champ[tyChampionPasada(R)])){
+    if(R.J){R.J.champ=R.J.champ||{};R.J.champ[tyChampionPasada(R)]=1;}
     tyModelo("champion",7.5).then(h=>{tyChampionPrep(h);tyChampionAnim(R,h,()=>_bs(R,cb));},()=>_bs(R,cb));return;}
   return _bs.apply(this,arguments);};}
 function tyChampionAnim(R,h,done){const TH=T3.TH,E=TY3.env;if(!E||TYR!==R){done();return;}
@@ -48,7 +50,7 @@ function tyChampionAnim(R,h,done){const TH=T3.TH,E=TY3.env;if(!E||TYR!==R){done(
   const mound=new TH.SphereGeometry(1,8,5),mat=tyTierraMat(TH),cord=carriles.map(()=>[]);
   const ov=el(`<div class="champov"><b>🚜 Pasa la Champion</b><span>Deja la pista perfecta para las semifinales</span><button class="btn sec sm" id="chSal">Saltar ▶▶</button></div>`);document.body.append(ov);document.body.classList.add("champrun");
   let fin=false,t0=performance.now(),dejado=0;const total=carriles.length*L;
-  const terminar=()=>{if(fin)return;fin=true;E.sc.remove(o);cord.flat().forEach(m=>E.sc.remove(m));if(berma)berma.visible=true;if(huella)huella.material.opacity=0;
+  const terminar=()=>{if(fin)return;fin=true;E.sc.remove(o);cord.flat().forEach(m=>E.sc.remove(m));if(berma)berma.visible=true;if(huella)huella.material.opacity=op0;
     R.cars.forEach((e,i)=>{e.gone=gone[i];});window.__tyCam=null;R.champ=null;ov.remove();document.body.classList.remove("champrun");done();};
   ov.querySelector("#chSal").onclick=terminar;
   R.champ={o,paso:()=>{if(fin)return;if(TYR!==R){terminar();return;}const t=R.champ.T!=null?R.champ.T:(performance.now()-t0)/1000,x=Math.min(total,t*vel),k=Math.min(carriles.length-1,Math.floor(x/L)),sl=x-k*L;
@@ -64,5 +66,5 @@ function tyChampionAnim(R,h,done){const TH=T3.TH,E=TY3.env;if(!E||TYR!==R){done(
     // cámara: de atrás y del costado de afuera, un poco alta
     const cb=tyPose(s-13,d-6.5),lk=tyPose(s+5,d+.5);window.__tyCam={p:[cb.x,tyY(s,d)+5.2,cb.z],l:[lk.x,1,lk.z],f:50};
     if(x>=total)terminar();}};
-  tyMsg("Antes de las semis pasa la Champion a emparejar la pista","var(--oro)");}
+  {const n=((R.c.etapa||R.c).n|0),ps=tyChampionPasada(R);tyMsg(n===ps?"Antes de la semi "+n+" pasa la Champion a emparejar la pista":"Antes de la semi "+ps+" pasó la Champion a emparejar la pista","var(--oro)");}}
 {const _dr=tyDraw;tyDraw=function(R){try{if(R&&R.champ)R.champ.paso();}catch(x){console.warn("champion",x);}return _dr.apply(this,arguments);};}
