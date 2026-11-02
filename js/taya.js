@@ -225,9 +225,13 @@ function tyGarage(J,onClose){const T=tyState();if(!TY3.mod[T.m]){toast("Llevando
   // piso de cemento con mancha de aceite, caballetes, gomas apiladas, banco de herramientas y lámpara
   const car=tyAutoObj({m:T.m,col:T.col,num:T.num,spon:S.apodo||""});car.position.y=.24;G.add(car);
   for(const [x,z] of [[1,.62],[1,-.62],[-1,.62],[-1,-.62]]){const c=new TH.Mesh(new TH.BoxGeometry(.18,.24,.18),std({color:0xc0392b,metalness:.4,roughness:.5}));c.position.set(x,.12,z);G.add(c);}
-  const goma=()=>{const g=new TH.Mesh(new TH.TorusGeometry(.3,.13,10,20),std({color:0x161616,roughness:.95}));g.rotation.x=Math.PI/2;return g;};
-  const pila=new TH.Group();for(let i=0;i<4;i++){const g=goma();g.position.y=.13+i*.27;pila.add(g);}pila.position.set(-1.9,0,1.5);G.add(pila);
-  const nuevas=new TH.Group();for(let i=0;i<4;i++){const g=goma();g.material=std({color:0x0b0b0b,roughness:.6});g.position.y=.13+i*.27;nuevas.add(g);}nuevas.position.set(1.6,0,-1.5);nuevas.visible=false;G.add(nuevas);
+  const gomaGeo=(()=>{const P=[];const ri=.21,ro=.37,h=.15;P.push(new TH.Vector2(ri,-h*.8));for(let i=0;i<=8;i++){const a=-Math.PI/2+i/8*Math.PI;P.push(new TH.Vector2(ro-.05+Math.cos(a)*.05,Math.sin(a)*h));}
+    P.push(new TH.Vector2(ri,h*.8));const g=new TH.LatheGeometry(P,36);return g;})();
+  const gomaT=tyRuedaTex(),gomaM=new TH.MeshStandardMaterial({map:gomaT.banda,roughness:.93,color:0x9a9a9a,side:TH.DoubleSide});
+  const goma=()=>{const g=new TH.Group();const c=new TH.Mesh(gomaGeo,gomaM);c.castShadow=true;c.receiveShadow=true;g.add(c);
+    const ll=new TH.Mesh(new TH.CylinderGeometry(.21,.21,.2,24),[std({color:0x8d9399,metalness:.7,roughness:.35}),gomaT.mL,gomaT.mL]);g.add(ll);return g;}; /* cubiertas de verdad: banda con tacos, hombros redondeados y llanta */ /* cubiertas de verdad: banda con tacos y costado con la llanta */
+  const pila=new TH.Group();for(let i=0;i<4;i++){const g=goma();g.position.y=.15+i*.305;g.rotation.y=i*1.3;pila.add(g);}pila.position.set(-1.9,0,1.5);G.add(pila);
+  const nuevas=new TH.Group();for(let i=0;i<4;i++){const g=goma();g.position.y=.15+i*.305;g.rotation.y=i*.7;nuevas.add(g);}nuevas.position.set(1.6,0,-1.5);nuevas.visible=false;G.add(nuevas);
   // estanterías con repuestos y el banco con el tablero de herramientas (modelos de Meshy)
   tyModelo("box/banco",1.6).then(m=>{if(!G.parent)return;const o=m.clone(true);o.rotation.y=-Math.PI/2;o.position.set(-1.98,0,.25);o.traverse(q=>{if(q.isMesh){q.castShadow=true;q.receiveShadow=true;q.material.side=T3.TH.DoubleSide;q.material.transparent=false;q.material.alphaTest=0;}});G.add(o);}).catch(()=>{});
   tyModelo("box/estante",1.2).then(m=>{if(!G.parent)return;for(const [x,z,ry] of [[-1.2,-1.85,0],[.3,-1.85,0]]){const o=m.clone(true);o.rotation.y=ry;o.position.set(x,0,z);o.traverse(q=>{if(q.isMesh)q.castShadow=true;});G.add(o);}}).catch(()=>{});
@@ -355,7 +359,7 @@ function tyPaso(R){const dt=TYH;R.t+=dt;const g=9.81;
     if(e.d<TY.IN-1.6){e.d=TY.IN-1.6;e.vl=Math.max(0,e.vl);}
     // avance: por adentro se recorre menos
     const k=c?TY.R/Math.max(10,Rc):1,ds=e.v*dt*k;e.s+=ds;e.dist+=ds;
-    if(e.fin===null&&R.green&&e.dist>=R.laps*L){e.fin=R.t-R.tGreen;if(e.yo){R.done=true;}}
+    if(e.fin===null&&R.green&&e.dist>=R.laps*L){e.fin=R.t-R.tGreen+(e.band|0)*3;if(e.yo){R.done=true;}}
   }
   // contacto entre autos
   for(let i=0;i<R.cars.length;i++)for(let j=i+1;j<R.cars.length;j++){const a=R.cars[i],b=R.cars[j];if(a.out&&b.out||a.gone||b.gone)continue;
@@ -423,20 +427,20 @@ function tyChoque(R,e,tipo,imp,otro){if(e.out)return;if(e.yo&&!R.c.entreno&&!R.c
 // cuando terminás (o quedás afuera) se completa el resto de la carrera a toda velocidad
 function tyCompletar(R){if(!R.green){tyRelargar(R);R.green=true;R.tGreen=R.tGreen??R.t;R.esperaLuz=false;}
   let k=0;while(R.cars.some(e=>!e.out&&e.fin===null)&&k++<120*400){tyPaso(R);if(!R.green){tyRelargar(R);R.green=true;}}
-  R.cars.forEach(e=>{if(!e.out&&e.fin===null)e.fin=R.t-R.tGreen+30;});}
+  R.cars.forEach(e=>{if(!e.out&&e.fin===null)e.fin=R.t-R.tGreen+30+(e.band|0)*3;});}
 function tyFinCarrera(R){if(TYR!==R)return;const pos=tyPosiciones(R),J=R.J,c=R.c;if(c.sufi){tySufFin(R);return;}
   const res=pos.map(e=>({id:e.id,dnf:!!e.out,t:e.fin,sup:!!e.sup}));tyGuardar(J,c,res);
   const yo=res.findIndex(x=>x.id==="yo");
   {pzFinCarrera(R);const T=tyState();J.gUso=J.gomaRota?TY_GOMA_MAX:(J.gUso|0)+1;J.gomaRota=false;J.serv=false;J.carreras=(J.carreras|0)+1;T.desg=Math.min(1,(T.desg||0)+c.laps*.0045);save();}
   if(pos[0])narraF("bandera",{a:pos[0]});
   TYR=null;tyBanderaBlanca(false);tyUI(false);tyAudioStop();
-  const tabla=pos.map((e,i)=>`<tr${e.yo?' class="yo"':''}><td>${i+1}</td><td>#${e.num} ${esc(e.n)}</td><td>${e.out?(e.out==="rueda"?"Toque":e.out==="pared"?"Paredón":e.out==="trompo"?"Trompo":"Choque"):e.fin!=null?e.fin.toFixed(2)+" s":"—"}</td></tr>`).join("");
+  const tabla=pos.map((e,i)=>`<tr${e.yo?' class="yo"':''}><td>${i+1}</td><td>#${e.num} ${esc(e.n)}</td><td>${e.out?(e.out==="rueda"?"Toque":e.out==="pared"?"Paredón":e.out==="trompo"?"Trompo":"Choque"):e.fin!=null?e.fin.toFixed(2)+" s"+(e.band?` <small style="color:#ffb4bd">(+${e.band*3} s banderín)</small>`:""):"—"}</td></tr>`).join("");
   const sig=tySiguiente(J);J.fuera=!sig;const pasa=tyPasaTxt(J,c);
   // primero las placas de las otras carreras de la etapa (y las que se corrieron sin vos); después tu resultado
   const placas=tyPlacasPend(J);
   tyPlacas(placas,()=>tyFinResultado(R,yo,pos,pasa,sig));}
 function tyFinResultado(R,yo,pos,pasa,sig){const J=R.J,c=R.c;
-  const tabla=pos.map((e,i)=>`<tr${e.yo?' class="yo"':''}><td>${i+1}</td><td>#${e.num} ${esc(e.n)}</td><td>${e.out?(e.out==="rueda"?"Toque":e.out==="pared"?"Paredón":e.out==="trompo"?"Trompo":"Choque"):e.fin!=null?e.fin.toFixed(2)+" s":"—"}</td></tr>`).join("");
+  const tabla=pos.map((e,i)=>`<tr${e.yo?' class="yo"':''}><td>${i+1}</td><td>#${e.num} ${esc(e.n)}</td><td>${e.out?(e.out==="rueda"?"Toque":e.out==="pared"?"Paredón":e.out==="trompo"?"Trompo":"Choque"):e.fin!=null?e.fin.toFixed(2)+" s"+(e.band?` <small style="color:#ffb4bd">(+${e.band*3} s banderín)</small>`:""):"—"}</td></tr>`).join("");
   modal(`<h3 class="gan" style="color:${yo===0?"var(--oro)":"var(--crema)"}">${esc(c.nom)}: ${R.yoFuera?"¡Afuera!":(yo+1)+"º"}</h3>
     <p>${R.yoFuera?(R.P.out==="abandono"?"Abandonaste esta carrera. ":"Rotura o vuelco: quedaste descalificado de esta carrera. "):""}${esc(pasa)}</p>
     <table class="ovtab"><tr><th>Pos</th><th>Piloto</th><th>Tiempo</th></tr>${tabla}</table><div id="tyBoxW"></div><div class="opts" id="tyOpts"></div>`,"resplaca");
@@ -571,11 +575,10 @@ function tyBuild(){const TH=T3.TH,sc=new TH.Scene(),E={sc,flags:[]};const L=TY.L
   E.pisoM=pisoM;E.piso=strip(-TY.W/2-.2,TY.W/2,pisoM,.02);E.piso.receiveShadow=true;
   // huella oscura (la línea de carrera mojada y apisonada)
   E.huella=strip(-4.2,-.6,std({color:0x3b2818,roughness:.95,transparent:true,opacity:.55}),.035);
-  // infield: pasto con cubiertas pintadas en el borde
+  // infield: pasto; el borde de adentro es el cordón de tierra que deja la Champion, con banderines en las curvas
   {const sh=new TH.Shape();const pts=[];for(let s=0;s<L;s+=3){const p=tyPose(s,-TY.W/2-.3);pts.push(new TH.Vector2(p.x,-p.z));}sh.setFromPoints(pts);
     const inf=new TH.Mesh(new TH.ShapeGeometry(sh),std({color:0x0f1a0b,roughness:1}));E.infield=inf;inf.rotation.x=-Math.PI/2;inf.position.y=.01;sc.add(inf);
-    const gomaG=new TH.TorusGeometry(.42,.18,6,12),gomaB=new TH.MeshStandardMaterial({color:0x151515,roughness:.9}),gomaW=new TH.MeshStandardMaterial({color:0xe8e8e0,roughness:.8});
-    let n=0;for(let s=0;s<L;s+=1.15){const p=tyPose(s,-TY.W/2-.55);const t=new TH.Mesh(gomaG,(n++>>2)%2?gomaB:gomaW);t.position.set(p.x,.2,p.z);t.rotation.x=Math.PI/2;sc.add(t);}}
+    try{tyBermaArmar(TH,sc,E);}catch(x){console.warn("berma",x);}}
   // paredón de hormigón y alambrado
   const muro=(d,h,mat,dy)=>{const pts=[],idx=[];let k=0,prev=false;for(let s=0;s<=L+.01;s+=1){if(tyEnPuerta(s)){prev=false;continue;}const p=tyPose(s,d),y0=tyY(s,d)+(dy||0);pts.push(p.x,y0,p.z,p.x,y0+h,p.z);if(prev){const a=(k-1)*2;idx.push(a,a+1,a+2,a+1,a+3,a+2);}k++;prev=true;}
     const g=new TH.BufferGeometry();g.setAttribute("position",new TH.Float32BufferAttribute(pts,3));g.setIndex(idx);g.computeVertexNormals();const m=new TH.Mesh(g,mat);sc.add(m);return m;};

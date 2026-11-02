@@ -176,3 +176,6 @@ body.pc #tyRace .typos b{font-size:34px}
 .mjcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
 #modal .box.mjsala .opts{flex-direction:row;flex-wrap:wrap}#modal .box.mjsala .opts .btn{flex:1 1 220px}
 @media (max-width:900px){.multi .mgrid{grid-template-columns:1fr}}
+.champov{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:14px;padding:10px 16px;border-radius:14px;background:rgba(8,10,16,.75);border:1px solid var(--oro);color:var(--crema);font:600 15px var(--f-ui)}
+.champov b{font:400 22px var(--f-display);color:var(--oro)}.champov .btn{width:auto}
+body.champrun #tyRace>*:not(#tyScene){visibility:hidden}
