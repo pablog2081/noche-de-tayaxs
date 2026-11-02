@@ -92,9 +92,9 @@ function tyRating(id){if(id==="yo"){const T=tyState();return .74+T.up.motor*.012
 // · 16 series de 8. Los 32 mejores TIEMPOS de las series van a las semis (8 por semi, del 1º al 8º puesto de largada).
 // · Repechajes (mismas vueltas que las series): corren todos los que no clasificaron, de a 10. Los 8 mejores tiempos
 //   completan las semis en los puestos 9 y 10 de cada una (largan de 3ª fila).
-// · 4 semis de 10. Ranking por tiempo de las 40: del 1º al 10º a la final, 11º y 12º suplentes, del 13º al 24º a la prefinal.
+// · 4 semis de 10. Ranking por tiempo de las 40: del 1º al 10º a la final, del 11º al 22º a la prefinal (no hay suplentes desde las semis).
 // · Final de 12: los 10 mejores tiempos de las semis + los 2 primeros de la prefinal.
-// · Prefinal y final: si alguno abandona, se relarga con un suplente (el que sigue en tiempo de la instancia anterior).
+// · Suplentes de la final: el orden de llegada de la prefinal (3º, 4º...). De la prefinal: los que siguen en tiempo de las semis.
 function tyJornadaNueva(sinYo){const T=tyState(),nB=sinYo?128:127;
   const presentes=TY_PIL.map(p=>p.id).filter((id,i)=>i===0||tyRnd(i*13+T.fecha*7)>.08).slice(0,nB);
   while(presentes.length<nB)presentes.push(TY_PIL.find(p=>!presentes.includes(p.id)).id);
@@ -125,12 +125,12 @@ function tySiguiente(J){
     J.semis=[0,1,2,3].map(i=>[...J.clasS.filter((_,k)=>k%4===i),...J.clasR.filter((_,k)=>k%4===i)]);}
   if(!R.semis){const k=J.semis.findIndex(s=>s.includes("yo"));if(yo&&k>=0)return {k:"semi",n:k+1,ids:J.semis[k],laps:LP.semi,nom:"Semifinal "+(k+1)};
     R.semis=J.semis.map(s=>tySimular(s,LP.semi));}
-  if(!J.rkSemi){J.rkSemi=tyOrdT(R.semis.flat()).map(x=>x.id);J.pre=J.rkSemi.slice(12,24);}
-  const supPre=J.rkSemi.slice(24);
+  if(!J.rkSemi){J.rkSemi=tyOrdT(R.semis.flat()).map(x=>x.id);J.pre=J.rkSemi.slice(10,22);}
+  const supPre=J.rkSemi.slice(22);
   if(!R.pre){if(yo&&J.pre.includes("yo"))return {k:"pre",n:1,ids:J.pre,laps:LP.pre,nom:"Prefinal",sup:supPre.slice()};
     R.pre=tySimular(J.pre,LP.pre,supPre);}
   if(!J.final)J.final=[...J.rkSemi.slice(0,10),...R.pre.filter(x=>!x.dnf).slice(0,2).map(x=>x.id)];
-  const supFin=J.rkSemi.slice(10).filter(id=>!J.final.includes(id));
+  const supFin=R.pre.filter(x=>!J.final.includes(x.id)).map(x=>x.id); /* los suplentes de la final salen del orden de llegada de la prefinal */
   // si quedaste suplente de la final, a veces alguno no puede largar y entrás vos
   if(yo&&!J.supYa&&!R.final&&!J.final.includes("yo")){J.supYa=1;const k=supFin.indexOf("yo");
     if(k>=0&&k<2&&Math.random()<(k?.12:.3)){const out=J.final[2+Math.floor(Math.random()*(J.final.length-2))];J.supNota=`${tyNombre(out)} no pudo largar la final: entrás vos como suplente, desde el fondo.`;J.final=[...J.final.filter(x=>x!==out),"yo"];}}
@@ -142,8 +142,8 @@ function tyPasaTxt(J,c,id){id=id||"yo";
   if(c.k==="serie"){const i=(J.clasS||[]).indexOf(id);return i>=0?`¡Clasificaste a la semifinal con el ${i+1}º mejor tiempo de las 16 series!`:"No entraste entre los 32 mejores tiempos: vas al repechaje.";}
   if(c.k==="repe"){const i=(J.clasR||[]).indexOf(id);return i>=0?`¡Pasaste a la semifinal con el ${i+1}º tiempo de los repechajes! Largás de 3ª fila.`:"No te alcanzó: pasaban los 8 mejores tiempos de los repechajes.";}
   if(c.k==="semi"){const i=(J.rkSemi||[]).indexOf(id);if(J.final&&J.final.includes(id)&&i>=10)return J.supNota||"¡Entrás a la final como suplente!";
-    return i<0?"":i<10?`¡¡ESTÁS EN LA GRAN FINAL!! (${i+1}º tiempo de las semis)`:i<12?`Quedaste ${i===10?"1º":"2º"} suplente de la final: esta vez no hizo falta.`:i<24?`Vas a la prefinal (${i+1}º tiempo de las semis): los 2 primeros completan la final.`:"Hasta acá llegaste esta noche: pasaban los 24 mejores tiempos.";}
-  if(c.k==="pre")return J.final&&J.final.includes(id)?"¡Te metiste en la Gran Final!":"Quedaste afuera de la final: pasaban los 2 primeros.";
+    return i<0?"":i<10?`¡¡ESTÁS EN LA GRAN FINAL!! (${i+1}º tiempo de las semis)`:i<22?`Vas a la prefinal (${i+1}º tiempo de las semis): los 2 primeros completan la final y los demás quedan de suplentes en ese orden.`:"Hasta acá llegaste esta noche: pasaban los 22 mejores tiempos.";}
+  if(c.k==="pre"){if(J.final&&J.final.includes(id))return J.supNota||"¡Te metiste en la Gran Final!";const k=(J.res.pre||[]).filter(x=>!(J.final||[]).includes(x.id)).findIndex(x=>x.id===id);return k>=0&&k<4?`Quedaste ${k+1}º suplente de la final: esta vez no hizo falta.`:"Quedaste afuera de la final: pasaban los 2 primeros.";}
   return "";}
 // guarda el resultado de una carrera (la tuya) y simula las demás de la misma etapa
 function tyGuardar(J,c,res){const R=J.res;
@@ -688,8 +688,8 @@ function tyPlacaGrilla(ctx,w,h,R,k){const cars=R.cars.filter(e=>!e.out&&!e.gone)
 // placas informativas de las carreras de la noche (todas, no solo las tuyas)
 const TY_ETAPAS=[["series",(s,J)=>s.map((r,i)=>({nom:"Serie "+(i+1),r,tag:x=>{const k=(J.clasS||[]).indexOf(x.id);return k>=0?`→ Semi (${k+1}º tiempo)`:"→ Repechaje";}}))],
   ["repes",(s,J)=>s.map((r,i)=>({nom:"Repechaje "+(i+1),r,tag:x=>(J.clasR||[]).includes(x.id)?"→ Semi (3ª fila)":""}))],
-  ["semis",(s,J)=>s.map((r,i)=>({nom:"Semifinal "+(i+1),r,tag:x=>{const k=(J.rkSemi||[]).indexOf(x.id);return k<0?"":k<10?`→ Final (${k+1}º)`:k<12?"Suplente final":k<24?"→ Prefinal":"";}}))],
-  ["pre",(r,J)=>[{nom:"Prefinal",r,tag:(x,k)=>(x.sup?"Suplente · ":"")+((J.final||[]).includes(x.id)?"→ Final":"")}]],["final",r=>[{nom:"Gran Final",r,tag:(x,k)=>(x.sup?"Suplente · ":"")+(k===0&&!x.dnf?"🏆 Ganador":"")}]]];
+  ["semis",(s,J)=>s.map((r,i)=>({nom:"Semifinal "+(i+1),r,tag:x=>{const k=(J.rkSemi||[]).indexOf(x.id);return k<0?"":k<10?`→ Final (${k+1}º)`:k<22?"→ Prefinal":"";}}))],
+  ["pre",(r,J)=>[{nom:"Prefinal",r,tag:(x,k)=>{const f=J.final||[];if(f.includes(x.id))return (x.sup?"Suplente · ":"")+"→ Final";const n=r.filter(y=>!f.includes(y.id)).findIndex(y=>y.id===x.id);return x.dnf?"":`${n+1}º suplente de la final`;}}]],["final",r=>[{nom:"Gran Final",r,tag:(x,k)=>(x.sup?"Suplente · ":"")+(k===0&&!x.dnf?"🏆 Ganador":"")}]]];
 function tyPlacasPend(J){J.vistas=J.vistas||{};const L=[];for(const [k,f] of TY_ETAPAS){if(J.res[k]&&!J.vistas[k]){J.vistas[k]=1;L.push(...f(J.res[k],J));}}return L;}
 function tyPlacas(L,done){if(!L.length){done();return;}let i=0,tm=null,fin=false;const quien=["rubia","morocha"];
   const ov=el(`<div class="typlaca" role="dialog" aria-label="Resultados de la noche"><div class="tpbox" id="tpBox"></div><div class="tpopts"><button class="btn sec sm" id="tpSalta">Saltar todas</button><button class="btn oro sm" id="tpSig">Próxima ▶</button></div></div>`);

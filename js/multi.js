@@ -129,10 +129,10 @@ function mjSiguiente(J){const R=J.res,LP=TY.LAPS;let c;
   if(!R.repes&&(c=mjEtapa(J,"repes",J.repes,LP.repe,i=>"Repechaje "+(i+1),"repe")))return c;
   if(!J.semis){J.clasR=tyOrdT(R.repes.flat()).filter(x=>!x.dnf).slice(0,8).map(x=>x.id);J.semis=[0,1,2,3].map(i=>[...J.clasS.filter((_,k)=>k%4===i),...J.clasR.filter((_,k)=>k%4===i)]);}
   if(!R.semis&&(c=mjEtapa(J,"semis",J.semis,LP.semi,i=>"Semifinal "+(i+1),"semi")))return c;
-  if(!J.rkSemi){J.rkSemi=tyOrdT(R.semis.flat()).map(x=>x.id);J.pre=J.rkSemi.slice(12,24);}
-  if(!R.pre){if((c=mjEtapa(J,"pre1",[J.pre],LP.pre,()=>"Prefinal","pre",J.rkSemi.slice(24))))return c;R.pre=R.pre1[0];}
+  if(!J.rkSemi){J.rkSemi=tyOrdT(R.semis.flat()).map(x=>x.id);J.pre=J.rkSemi.slice(10,22);}
+  if(!R.pre){if((c=mjEtapa(J,"pre1",[J.pre],LP.pre,()=>"Prefinal","pre",J.rkSemi.slice(22))))return c;R.pre=R.pre1[0];}
   if(!J.final)J.final=[...J.rkSemi.slice(0,10),...R.pre.filter(x=>!x.dnf).slice(0,2).map(x=>x.id)];
-  if(!R.final){const sup=J.rkSemi.slice(10).filter(id=>!J.final.includes(id));if((c=mjEtapa(J,"final1",[J.final],LP.final,()=>"Gran Final","final",sup)))return c;R.final=R.final1[0];}
+  if(!R.final){const sup=R.pre.filter(x=>!J.final.includes(x.id)).map(x=>x.id);if((c=mjEtapa(J,"final1",[J.final],LP.final,()=>"Gran Final","final",sup)))return c;R.final=R.final1[0];}
   return null;}
 function mjVivos(){return new Set(TYV.peers.map(p=>p.peer));}
 function mjAvanzar(){const M=TYV.mj,J=M.J;clearTimeout(M.toT);let c;
