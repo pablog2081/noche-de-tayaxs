@@ -66,7 +66,7 @@ function updFlag(dt,t){const F=CH3.flag,TH=T3.TH,b=CH3.bones;if(!F||!b.hand||!b.
 /* ===== semáforo ===== */
 function drawLights(ctx,w,h,phase){
   const r=h*.032,cx=w/2,y=h*.19;ctx.fillStyle="rgba(0,0,0,.6)";ctx.fillRect(cx-r*5.2,y-r*1.5,r*10.4,r*3);
-  for(let i=0;i<4;i++){const on=i<3?phase>i:phase>=4;ctx.fillStyle=on?(i<3?"#f2b632":"#3fd07a"):"#333";ctx.beginPath();ctx.arc(cx-r*3.75+i*r*2.5,y,r,0,7);ctx.fill();}
+  for(let i=0;i<4;i++){const on=i<3?phase>i:phase>=4;ctx.fillStyle=on?(i<3?"#e0242f":"#3fd07a"):"#333";ctx.beginPath();ctx.arc(cx-r*3.75+i*r*2.5,y,r,0,7);ctx.fill();}
 }
 /* ===== teclas ===== */
 const tk=(a,c)=>!!c&&TECLAS[a].includes(c);

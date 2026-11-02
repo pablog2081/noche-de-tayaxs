@@ -189,3 +189,4 @@ body.champrun #tyRace>*:not(#tyScene){visibility:hidden}
 #tyHonor{position:absolute;left:50%;top:5%;transform:translateX(-50%);background:rgba(10,12,18,.8);border:2px solid var(--oro);border-radius:12px;padding:8px 22px;text-align:center;pointer-events:none;z-index:6}
 #tyHonor b{display:block;font:400 26px 'Alfa Slab One',serif;color:var(--oro)}
 #tyHonor span{font:700 16px 'Barlow Condensed',sans-serif;color:#f3e9d2}
+#tyPresCred{position:absolute;left:12px;bottom:6px;font:600 11px 'Barlow Condensed',sans-serif;color:rgba(243,233,210,.7);pointer-events:none;z-index:6}

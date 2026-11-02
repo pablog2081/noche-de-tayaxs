@@ -22,26 +22,48 @@ function tyPresPlaca(e,txt){let d=$("#tyPres");if(!d){d=el(`<div id="tyPres"></d
 function tyPresRuta(e,gdist,gd,ordenIdx){const B=TYB,L=TY.LAP,bx=tyBoxDe(e.id,ordenIdx);e.box=bx;
   const gs=B.sal+5+((((gdist-(B.sal+5))%L)+L)%L||L);
   return tyRuta([[bx.s,bx.d],[bx.s,B.road],[B.sal-7,B.road],[B.sal+5,TY.W/2-2.5],[gs-9,gd],[gs,gd]]);}
+/* ---------- la voz del estadio (el locutor), con eco de altoparlantes ---------- */
+const LOC={busy:false,src:[],fin:0};
+function tyLocOut(){if(LOC.out||!AC)return LOC.out;const g=AC.createGain(),dl=AC.createDelay(1),fb=AC.createGain(),wet=AC.createGain(),hp=AC.createBiquadFilter();
+  hp.type="highpass";hp.frequency.value=180;dl.delayTime.value=.17;fb.gain.value=.28;wet.gain.value=.32;
+  g.connect(hp);hp.connect(AC.destination);hp.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(AC.destination);LOC.out=g;return g;}
+function tyLocStop(){LOC.src.forEach(s=>{try{s.stop();}catch(x){}});LOC.src=[];LOC.busy=false;clearTimeout(LOC.tm);}
+// items: clave del clip, o {k, gap} (gap: pausa antes, puede ser negativa para pegarlas)
+function tyLocutor(items,txt){tyLocStop();const M=NARF.map||{},ok=!(muted||noVoz)&&AC&&NARF.buf;let t=ok?AC.currentTime+.03:0,tot=0;LOC.busy=true;if(!ok)narLoadF();
+  items.forEach((it,i)=>{const o=typeof it==="string"?{k:it}:it,c=M[o.k];if(!c)return;const [off,d]=c,gap=i?(o.gap!=null?o.gap:-.05):0;
+    if(ok){t+=gap;const s=AC.createBufferSource(),g=AC.createGain();s.buffer=NARF.buf;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1.15*VOL.rel,t+.02);g.gain.setValueAtTime(1.15*VOL.rel,t+Math.max(.03,d-.04));g.gain.linearRampToValueAtTime(0,t+d);
+      s.connect(g);g.connect(tyLocOut());s.start(t,off,d);LOC.src.push(s);t+=d;}
+    tot+=gap+d;});
+  if(!tot)tot=1.2;LOC.tm=setTimeout(()=>{LOC.busy=false;},(tot+.15)*1000);if(txt&&TYR)tyMsg("🏟️ "+txt,"var(--oro)");}
+const tyLocNum=n=>{n=n|0;return n<=100?["e_num_"+n]:n<200?["e_num_ciento",{k:"e_num_"+(n-100),gap:-.04}]:[];};
+const tyLocNom=e=>e.yo?(S.tyVoz?["e_yo_"+S.tyVoz]:[]):["e_n_"+e.id];
+/* ---------- la música: Also sprach Zarathustra ---------- */
+const ZARA={a:null};
+function tyZaraVol(){if(!ZARA.a)return;const base=(muted||noMus)?0:Math.min(1,.9*VOL.mus*1.4);ZARA.a.volume=Math.max(0,Math.min(1,base*(LOC.busy?.45:1)*(ZARA.fade??1)));}
+function tyZara(on){if(on){try{if(!ZARA.a){ZARA.a=new Audio("taya/zaratustra.mp3?v=1");ZARA.a.preload="auto";}ZARA.fade=1;ZARA.a.currentTime=0;tyZaraVol();ZARA.a.play().catch(()=>{});}catch(x){}return;}
+  if(!ZARA.a||ZARA.a.paused)return;const t0=performance.now(),f=()=>{ZARA.fade=Math.max(0,1-(performance.now()-t0)/2500);tyZaraVol();if(ZARA.fade>0)requestAnimationFrame(f);else ZARA.a.pause();};f();}
 function tyPresentar(R,cars,cb,sup){const items=cars.map((e,i)=>{const gdist=e.dist,gd=e.d;return {e,r:tyPresRuta(e,gdist,gd,i),delay:1e9,fin:e=>{e.dist=gdist;e.s=gdist;e.d=gd;}};});
   if(!items.length){cb();return;}
-  const cb0=cb;cb=()=>{tyPresPlaca(null);const t0=performance.now(),esp=()=>{if(TYR!==R)return;if(narLibreF()||performance.now()-t0>7000)cb0();else setTimeout(esp,200);};esp();};
-  tyAnimIni(R,"presenta",items,15,cb);const A=R.anim;A.dur=1e9;A.cine=true;A.pres={k:0,tUlt:-9,sup,listo:!!sup};
-  if(!sup){narraF("pres_intro",{});A.pres.tIntro=0;}
-  tyMsg(sup?"Entra el suplente: sale de boxes y va al fondo de la grilla":"Gran Final: los pilotos salen de boxes de a uno","var(--oro)");}
-NARRA_F4.pres_intro=[["f:pres_final"]];
+  const cb0=cb;cb=()=>{tyPresPlaca(null);const cr=$("#tyPresCred");if(cr)cr.remove();if(!sup)tyZara(false);const t0=performance.now(),esp=()=>{if(TYR!==R)return;if((!LOC.busy&&narLibreF())||performance.now()-t0>6000)cb0();else setTimeout(esp,200);};esp();};
+  tyAnimIni(R,"presenta",items,15,cb);const A=R.anim;A.dur=1e9;A.cine=true;A.pres={k:0,tUlt:-9,sup,listo:!!sup,fase:sup?2:0};
+  A.B.onclick=()=>{narStopF();tyLocStop();tyZara(false);tyAnimFin(R);};
+  if(!sup){narStopF();tyZara(true);$("#tyRace").append(el(`<div id="tyPresCred">Música: «Also sprach Zarathustra» (R. Strauss) · versión de Kevin MacLeod (incompetech.com) · CC BY 3.0</div>`));}
+  tyMsg(sup?"Entra el suplente: sale de boxes y va al fondo de la grilla":"Gran Final: presentación de los pilotos","var(--oro)");}
 function tyPresTurno(R,A,t){const P=A.pres,o=A.items[P.k],e=o.e,k=P.k;o.delay=t;P.tUlt=t;P.k++;
-  const pos=R.cars.filter(x=>!x.out).sort((a,b)=>b.dist-a.dist||a.d-b.d).indexOf(e),puesto=Math.max(0,P.sup?pos:k);
-  const num=tyFinalNum(e.num);let seq;
-  if(P.sup)seq=["f:sup_entra","a","f:maquina",...num];
-  else if(puesto===0)seq=["f:pres_p1","a","f:maquina",...num];
-  else{const v=[["f:pres_pista","a","f:maquina",...num],["f:pres_pista2","a","f:maquina",...num],["f:pres_turno","a","f:maquina",...num],["f:pres_asoma","a","f:maquina",...num],["f:pres_aplauso","a","f:maquina",...num]];
-    seq=Math.random()<.5&&puesto<12?["f:pres_p"+(puesto+1),"a","f:maquina",...num]:v[Math.floor(Math.random()*v.length)];}
-  NARRA_F4.salida_pres=[seq];NARF_BOLSA.salida_pres=null;narraF("salida_pres",{a:e});
-  tyPresPlaca(e,P.sup?"Entra el suplente · larga último":puesto===0?"Pole position · larga 1º":`Larga ${puesto+1}º`);}
+  const num=tyLocNum(e.num),nom=tyLocNom(e),fila=Math.floor(k/4),caj=k%4;let seq,txt;
+  if(P.sup){seq=["e_suplente",...num,{k:nom[0],gap:.12}];txt=`Ingresa el suplente, máquina número ${e.num}… ${e.n}`;}
+  else if(fila===0){const ab=[["e_pista",{k:"e_maquina",gap:.25}],["e_su_lado"],["e_tercer",{k:"e_el_numero",gap:.12}],["e_externa"]][caj];
+    seq=[...ab,{k:num[0],gap:.1},...num.slice(1),{k:nom[0],gap:.18}];
+    txt=[`¡A la pista! Máquina número ${e.num}… ${e.n}`,`A su lado, con el número ${e.num}… ${e.n}`,`En el tercer cajón sale… el número ${e.num}… ${e.n}`,`Y contra la cuerda externa, el número ${e.num}… ${e.n}`][caj];}
+  else{seq=caj===0?[fila===1?"e_fila2":"e_fila3",{k:nom[0],gap:.3}]:[nom[0]];txt=(caj===0?(fila===1?"¡Segunda fila! ":"¡Tercera fila! "):"")+e.n;}
+  tyLocutor(seq.filter(x=>x&&(typeof x==="string"||x.k)),txt);
+  tyPresPlaca(e,P.sup?"Ingresa el suplente · larga último":`Fila ${fila+1} · cajón ${caj+1}`);}
 {const _ap=tyAnimPaso;tyAnimPaso=function(R,now){const A=R.anim;
-  if(A&&A.pres){const t=A.frz!=null?A.frz:(now-A.t0)/1000,P=A.pres;
-    if(!P.listo){if(t>1.2&&(narLibreF()||t>9))P.listo=true;}
-    else if(P.k<A.items.length&&t-P.tUlt>3.4&&(narLibreF()||t-P.tUlt>8.5))tyPresTurno(R,A,t);
+  if(A&&A.pres){const t=A.frz!=null?A.frz:(now-A.t0)/1000,P=A.pres;tyZaraVol();
+    // con la música: a los 9 s (cuando termina la primera fanfarria) el locutor anuncia "¡FI… NAL… deganadores!"
+    if(P.fase===0&&t>9.3){P.fase=1;tyLocutor(["e_fi",{k:"e_nal",gap:.22},{k:"e_deganadores",gap:-.02}],"¡FI… NAL… deGANADORES!");P.tF=t;}
+    else if(P.fase===1&&t-P.tF>1&&!LOC.busy){P.fase=2;P.listo=true;P.tUlt=t-1;}
+    else if(P.listo&&P.k<A.items.length){const fila=Math.floor(P.k/4),min=P.sup?0:fila===0?1.2:1.9;if(t-P.tUlt>min&&(!LOC.busy||t-P.tUlt>7))tyPresTurno(R,A,t);}
     if(P.k>=A.items.length&&A.dur>1e8)A.dur=Math.max(...A.items.map(o=>o.delay+o.r.len/A.vel))+.8;}
   _ap.apply(this,arguments);
   const B=R.anim;if(!B)return;

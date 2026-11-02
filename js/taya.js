@@ -871,16 +871,16 @@ const tySlug=n=>n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 function narraF(k,p){p=p||{};if(typeof TYR!=="undefined"&&TYR&&TYR.c.entreno)return;const L=NARRA_F4[k];if(!L)return;let b=NARF_BOLSA[k];if(!b||!b.length)b=NARF_BOLSA[k]=[...Array(L.length).keys()].sort(()=>Math.random()-.5);const seq=L[b.shift()];
   const clips=[],txt=[];for(const sg of seq){if(sg.startsWith("f:")){const f=sg.slice(2);txt.push(NAR_F4[f]||"");clips.push("f_"+f);continue;}
     const e=p[sg];if(!e)continue;if(e.yo||e.id==="yo"){const v=S.tyVoz&&TY_VOCES.find(x=>tySlug(x)===S.tyVoz);if(v){txt.push("¡"+v+"!");clips.push("n_yo_"+S.tyVoz);}else{txt.push("¡el piloto del pueblo!");clips.push("f_pueblo");}}else{txt.push(e.n||tyNombre(e.id));clips.push("n_"+(e.id||""));}}
-  const prio=/largada|relargada|ultima|bandera|rueda|pared|trompo|roja|lider|podio|adios|previa|adentro|afuera|salida|entrada|chiquito/.test(k);
+  const prio=/sema|largada|relargada|ultima|bandera|rueda|pared|trompo|roja|lider|podio|adios|previa|adentro|afuera|salida|entrada|chiquito/.test(k);
   if(!(muted||noVoz||!AC)){narLoadF();const it={clips,prio,t:performance.now()};if(prio){NARF.q=NARF.q.filter(x=>x.prio);NARF.q.push(it);}else if(NARF.q.length<1&&!(NARF.busy&&k==="pasa"))NARF.q.push(it);narPlayF();}
   if(TYR)tyMsg("🎙️ "+txt.join(" ").replace(/ ([,!.])/g,"$1"),"var(--celeste)");}
 function narLoadF(){if(NARF.buf||NARF.loading||!AC)return;NARF.loading=true;
-  Promise.all([fetch("taya/relato.json?v=71").then(r=>r.json()),fetch("taya/relato.mp3?v=71").then(r=>r.arrayBuffer())]).then(([m,ab])=>{NARF.map=m;return new Promise((res,rej)=>AC.decodeAudioData(ab,res,rej));}).then(b=>{NARF.buf=b;narPlayF();}).catch(()=>{NARF.loading=false;});}
+  Promise.all([fetch("taya/relato.json?v=72").then(r=>r.json()),fetch("taya/relato.mp3?v=72").then(r=>r.arrayBuffer())]).then(([m,ab])=>{NARF.map=m;return new Promise((res,rej)=>AC.decodeAudioData(ab,res,rej));}).then(b=>{NARF.buf=b;narPlayF();}).catch(()=>{NARF.loading=false;});}
 function narPlayF(){if(NARF.busy||!NARF.q.length||!NARF.buf||!AC)return;const it=NARF.q.shift();if(!it.prio&&performance.now()-it.t>2500){narPlayF();return;}const cl=it.clips.filter(c=>c&&NARF.map[c]);if(!cl.length){narPlayF();return;}
   NARF.busy=true;if(!NARF.gain){NARF.gain=AC.createGain();NARF.gain.gain.value=1.2*VOL.rel;NARF.gain.connect(AC.destination);}
   let t=AC.currentTime+.03;const srcs=[];cl.forEach((c,i)=>{const [o,d]=NARF.map[c];const s=AC.createBufferSource(),g=AC.createGain();s.buffer=NARF.buf;
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1,t+.02);g.gain.setValueAtTime(1,t+Math.max(.03,d-.04));g.gain.linearRampToValueAtTime(0,t+d);
-    s.connect(g);g.connect(NARF.gain);s.start(t,o,d);srcs.push(s);t+=d+(i<cl.length-1?.05:0);});
+    s.connect(g);g.connect(NARF.gain);s.start(t,o,d);srcs.push(s);t+=d-(i<cl.length-1?.07:0);}); /* frase y nombre pegados, sin hueco */
   NARF.src=srcs;srcs[srcs.length-1].onended=()=>{NARF.src=null;setTimeout(()=>{NARF.busy=false;narPlayF();},400);};}
 function narStopF(){NARF.q=[];if(NARF.src)NARF.src.forEach(s=>{try{s.onended=null;s.stop();}catch(e){}});NARF.src=null;NARF.busy=false;}
 const narLibreF=()=>!NARF.busy&&!NARF.q.length;

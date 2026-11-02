@@ -88,8 +88,33 @@ function tyBandePaso(E,R,dt){if(!E.bande||!E.bande.length)return;const roja=!!R.
   for(const b of E.bande){const w=roja?-.25+Math.sin(t*7+b.ph)*.9:2.6;b.brazo.rotation.z+=(w-b.brazo.rotation.z)*Math.min(1,dt*(roja?12:3));
     b.tela.rotation.y=roja?Math.sin(t*9+b.ph)*.5:0;}}
 
+/* ---------- semáforo: poste desde la tribuna con un brazo hasta un cuarto de la pista ---------- */
+function tySemaforo3D(E){if(E.sema)return;const TH=T3.TH,g=new TH.Group(),fierro=new TH.MeshStandardMaterial({color:0x8f949a,roughness:.45,metalness:.7}),negro=new TH.MeshStandardMaterial({color:0x15171a,roughness:.6});
+  const s0=1.5,p=tyPose(s0,0),H=7.2,dP=TY.W/2+2.4,dF=TY.W/2-TY.W/4;
+  const poste=new TH.Mesh(new TH.CylinderGeometry(.14,.18,H,12),fierro);poste.position.set(0,H/2,dP);poste.castShadow=true;g.add(poste);
+  const base=new TH.Mesh(new TH.CylinderGeometry(.35,.4,.3,12),fierro);base.position.set(0,.15,dP);g.add(base);
+  const brazo=new TH.Mesh(new TH.CylinderGeometry(.09,.09,dP-dF+.3,10),fierro);brazo.rotation.x=Math.PI/2;brazo.position.set(0,H-.15,(dP+dF)/2);brazo.castShadow=true;g.add(brazo);
+  const top=new TH.Mesh(new TH.CylinderGeometry(.08,.08,1.6,8),fierro);top.position.set(0,H+.6,dP);g.add(top);
+  // la caja del semáforo, colgada del brazo, de cara a la grilla
+  const W=2.05,caja=new TH.Mesh(new TH.BoxGeometry(.36,.62,W),negro);caja.position.set(0,H-.75,dF+W/2-.25);caja.castShadow=true;g.add(caja);
+  for(const z of[-.6,.6]){const c=new TH.Mesh(new TH.CylinderGeometry(.03,.03,.32,6),fierro);c.position.set(0,H-.3,caja.position.z+z);g.add(c);}
+  const lamps=[];for(let i=0;i<4;i++){const z=caja.position.z-W/2+.29+i*.49;
+    const m=new TH.MeshStandardMaterial({color:0x1d1d1f,roughness:.25,emissive:0x000000,emissiveIntensity:3});const l=new TH.Mesh(new TH.CircleGeometry(.17,20),m);l.rotation.y=-Math.PI/2;l.position.set(-.185,H-.75,z);g.add(l);
+    const vis=new TH.Mesh(new TH.CylinderGeometry(.2,.2,.22,16,1,true,0,Math.PI),negro);vis.rotation.z=Math.PI/2;vis.rotation.y=0;vis.position.set(-.29,H-.75,z);vis.rotation.set(0,0,Math.PI/2);vis.material.side=TH.DoubleSide;g.add(vis);
+    lamps.push(m);}
+  g.position.set(p.x,0,p.z);g.rotation.y=p.h;E.sc.add(g);E.sema={g,lamps,st:""};}
+function tySemaPaso(E,R){const S3=E.sema;if(!S3)return;let st;
+  if(R.esperaLuz)st="r"+Math.min(3,R.phase|0);else if(R.green&&R.tGreen!=null&&R.t-R.tGreen<5)st="v";else if(R.roja)st=(performance.now()/500|0)%2?"r3":"r0";else st="r0";
+  if(st===S3.st)return;S3.st=st;const n=st[0]==="r"?+st[1]:0;
+  S3.lamps.forEach((m,i)=>{if(st==="v"){m.color.setHex(0x0a3a18);m.emissive.setHex(0x22ff66);}else if(i<n){m.color.setHex(0x3a0808);m.emissive.setHex(0xff1a1a);}else{m.color.setHex(0x1d1d1f);m.emissive.setHex(0x000000);}});}
+// el relator: "¡Comienza el semáforo…!" y al verde "¡Pasa a verde…! ¡Largaron!"
+Object.assign(NAR_F4,{sema:"¡Comienza el semáforo…!",paverde:"¡Pasa a verde…!",largaron:"¡Largaron!"});
+NARRA_F4.sema=[["f:sema"]];NARRA_F4.largada=[["f:paverde","f:largaron"]];NARRA_F4.relargada=[["f:paverde","f:largaron"]];NARF_BOLSA.largada=NARF_BOLSA.relargada=null;
+// si todavía no están grabadas las frases nuevas del semáforo, usa las de siempre
+{const _nf=narraF;narraF=function(k,p){if((k==="largada"||k==="relargada")&&NARF.map&&!NARF.map.f_paverde){NARRA_F4.largada_v=[["f:largada1"]];NARF_BOLSA.largada_v=null;return _nf.call(this,"largada_v",p);}
+  return _nf.apply(this,arguments);};}
 /* ---------- enganches ---------- */
-{const _ee=tyEnvEst;tyEnvEst=function(){const E=_ee.apply(this,arguments);try{tyCalArmar(E);tyMangrullo(E);tyBanderilleros(E);}catch(x){console.warn("pista",x);}return E;};}
+{const _ee=tyEnvEst;tyEnvEst=function(){const E=_ee.apply(this,arguments);try{tyCalArmar(E);tyMangrullo(E);tyBanderilleros(E);tySemaforo3D(E);}catch(x){console.warn("pista",x);}return E;};}
 // la cal se pinta de nuevo al empezar cada noche (o cada desafío)
 {const _s3=tySetup3D;tySetup3D=function(R){const r=_s3.apply(this,arguments);try{const E=TY3.env;if(E&&E.cal&&!R.c.entreno){const id=R.J||R.c;if(TY3.calJ!==id){TY3.calJ=id;tyCalPintar(E);}}}catch(x){}return r;};}
-{const _dr=tyDraw;tyDraw=function(R){try{const E=TY3.env;if(E&&!E.sal&&R&&R.g3){const dt=Math.min(.05,R.dt||.016);tyCalBorrar(E,R,dt);tyBandePaso(E,R,dt);}}catch(x){}return _dr.apply(this,arguments);};}
+{const _dr=tyDraw;tyDraw=function(R){try{const E=TY3.env;if(E&&!E.sal&&R&&R.g3){const dt=Math.min(.05,R.dt||.016);tyCalBorrar(E,R,dt);tyBandePaso(E,R,dt);tySemaPaso(E,R);if(R.esperaLuz&&!R._luzVista&&!R.c.vivo)narraF("sema",{});R._luzVista=!!R.esperaLuz;}}catch(x){}return _dr.apply(this,arguments);};}
