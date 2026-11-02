@@ -42,7 +42,7 @@ function tyChampionPrep(h){if(h.userData.prep)return;h.userData.prep=1;const TH=
   return _bs.apply(this,arguments);};}
 function tyChampionAnim(R,h,done){const TH=T3.TH,E=TY3.env;if(!E||TYR!==R){done();return;}
   const L=TY.LAP,carriles=[TY.W/2-2.2,1.1,-2.0,TY_BERMA_D+2.15],vel=34,o=h.clone(true);E.sc.add(o);
-  const gone=R.cars.map(e=>e.gone);R.cars.forEach(e=>{e.gone=true;});const berma=E.berma;if(berma)berma.visible=false;
+  const gone=R.cars.map(e=>e.gone);R.cars.forEach(e=>{e.gone=true;});const berma=E.berma;
   const huella=E.huella,op0=huella?huella.material.opacity:0;
   // los cordones que va dejando: uno por vuelta, del lado de adentro de la cuchilla
   const mound=new TH.SphereGeometry(1,8,5),mat=tyTierraMat(TH),cord=carriles.map(()=>[]);
@@ -51,12 +51,13 @@ function tyChampionAnim(R,h,done){const TH=T3.TH,E=TY3.env;if(!E||TYR!==R){done(
   const terminar=()=>{if(fin)return;fin=true;E.sc.remove(o);cord.flat().forEach(m=>E.sc.remove(m));if(berma)berma.visible=true;if(huella)huella.material.opacity=0;
     R.cars.forEach((e,i)=>{e.gone=gone[i];});window.__tyCam=null;R.champ=null;ov.remove();document.body.classList.remove("champrun");done();};
   ov.querySelector("#chSal").onclick=terminar;
-  R.champ={paso:()=>{if(fin)return;if(TYR!==R){terminar();return;}const t=R.champ.T!=null?R.champ.T:(performance.now()-t0)/1000,x=Math.min(total,t*vel),k=Math.min(carriles.length-1,Math.floor(x/L)),sl=x-k*L;
+  R.champ={o,paso:()=>{if(fin)return;if(TYR!==R){terminar();return;}const t=R.champ.T!=null?R.champ.T:(performance.now()-t0)/1000,x=Math.min(total,t*vel),k=Math.min(carriles.length-1,Math.floor(x/L)),sl=x-k*L;
     // cambio de carril suave al cerrar cada vuelta
     const dA=carriles[k],dB=carriles[Math.min(carriles.length-1,k+1)],mz=sl>L-25?(sl-(L-25))/25:0,d=dA+(dB-dA)*mz*mz*(3-2*mz),s=-20+sl;
-    const p=tyPose(s,d);o.position.set(p.x,tyYc(s,d),p.z);o.rotation.set(0,p.h+Math.PI+(dB-dA)*mz*.04,0);
+    const p=tyPose(s,d);o.position.set(p.x,tyYc(s,d),p.z);o.rotation.set(0,p.h+(dB-dA)*mz*.04,0);
     // va dejando el cordón cada 1,6 m; el de la vuelta anterior se lo lleva al pasar
-    while(dejado<=x){const kk=Math.min(carriles.length-1,Math.floor(dejado/L)),ss=-20+dejado-kk*L,dd=carriles[kk]-2.15,q=tyPose(ss,dd);
+    while(dejado<=x){const kk=Math.min(carriles.length-1,Math.floor(dejado/L));if(kk>=carriles.length-1){dejado+=1.6;continue;} /* la última vuelta lleva el cordón contra el borde: no queda montículo */
+      const ss=-20+dejado-kk*L,dd=carriles[kk]-2.15,q=tyPose(ss,dd);
       const m=new TH.Mesh(mound,mat);m.scale.set(1.1,.3,.6);m.position.set(q.x,tyY(ss,dd),q.z);m.rotation.y=q.h;m.castShadow=true;E.sc.add(m);cord[kk].push({m,s:ss});dejado+=1.6;}
     if(k>0)for(const c of cord[k-1]){if(c.m.parent&&((s-c.s)%L+L)%L<6&&((s-c.s)%L+L)%L>0)E.sc.remove(c.m);}
     if(huella)huella.material.opacity=op0*(1-x/total);
