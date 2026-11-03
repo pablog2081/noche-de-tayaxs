@@ -108,8 +108,8 @@ function tySemaPaso(E,R){const S3=E.sema;if(!S3)return;let st;
   if(st===S3.st)return;S3.st=st;const n=st[0]==="r"?+st[1]:0;
   S3.lamps.forEach((m,i)=>{if(st==="v"){m.color.setHex(0x0a3a18);m.emissive.setHex(0x22ff66);}else if(i<n){m.color.setHex(0x3a0808);m.emissive.setHex(0xff1a1a);}else{m.color.setHex(0x1d1d1f);m.emissive.setHex(0x000000);}});}
 // el relator: "¡Comienza el semáforo…!" y al verde "¡Pasa a verde…! ¡Largaron!"
-Object.assign(NAR_F4,{sema:"¡Comienza el semáforo…!",paverde:"¡Pasa a verde…!",largaron:"¡Largaron!"});
-NARRA_F4.sema=[["f:sema"]];NARRA_F4.largada=[["f:paverde","f:largaron"]];NARRA_F4.relargada=[["f:paverde","f:largaron"]];NARF_BOLSA.largada=NARF_BOLSA.relargada=null;
+Object.assign(NAR_F4,{sema:"¡Comienza el semáforo…!",paverde:"¡Pasa a verde…!",acelerador:"¡Acelerador a fondooooo!",largaron:"¡Largaron!"});
+NARRA_F4.sema=[["f:sema"]];NARRA_F4.largada=[["f:paverde","f:acelerador","f:largaron"]];NARRA_F4.relargada=[["f:paverde","f:acelerador","f:largaron"]];NARF_BOLSA.largada=NARF_BOLSA.relargada=null;
 // si todavía no están grabadas las frases nuevas del semáforo, usa las de siempre
 {const _nf=narraF;narraF=function(k,p){if((k==="largada"||k==="relargada")&&NARF.map&&!NARF.map.f_paverde){NARRA_F4.largada_v=[["f:largada1"]];NARF_BOLSA.largada_v=null;return _nf.call(this,"largada_v",p);}
   return _nf.apply(this,arguments);};}
@@ -117,4 +117,4 @@ NARRA_F4.sema=[["f:sema"]];NARRA_F4.largada=[["f:paverde","f:largaron"]];NARRA_F
 {const _ee=tyEnvEst;tyEnvEst=function(){const E=_ee.apply(this,arguments);try{tyCalArmar(E);tyMangrullo(E);tySemaforo3D(E); /* los banderilleros se sacaron */}catch(x){console.warn("pista",x);}return E;};}
 // la cal se pinta de nuevo al empezar cada noche (o cada desafío)
 {const _s3=tySetup3D;tySetup3D=function(R){const r=_s3.apply(this,arguments);try{const E=TY3.env;if(E&&E.cal&&!R.c.entreno){const id=R.J||R.c;if(TY3.calJ!==id){TY3.calJ=id;tyCalPintar(E);}}}catch(x){}return r;};}
-{const _dr=tyDraw;tyDraw=function(R){try{const E=TY3.env;if(E&&!E.sal&&R&&R.g3){const dt=Math.min(.05,R.dt||.016);tyCalBorrar(E,R,dt);tySemaPaso(E,R);if(R.esperaLuz&&!R._luzVista&&!R.c.vivo)narraF("sema",{});R._luzVista=!!R.esperaLuz;}}catch(x){}return _dr.apply(this,arguments);};}
+{const _dr=tyDraw;tyDraw=function(R){try{const E=TY3.env;if(E&&!E.sal&&R&&R.g3){const dt=Math.min(.05,R.dt||.016); /* la cal queda fija: no se borra */tySemaPaso(E,R);if(R.esperaLuz&&!R._luzVista&&!R.c.vivo)narraF("sema",{});R._luzVista=!!R.esperaLuz;}}catch(x){}return _dr.apply(this,arguments);};}

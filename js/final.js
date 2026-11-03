@@ -49,13 +49,18 @@ function tyPresentar(R,cars,cb,sup){const items=cars.map((e,i)=>{const gdist=e.d
   A.B.onclick=()=>{narStopF();tyLocStop();tyZara(false);tyAnimFin(R);};
   if(!sup){narStopF();tyZara(true);$("#tyRace").append(el(`<div id="tyPresCred">Música: «Also sprach Zarathustra» (R. Strauss) · versión de Kevin MacLeod (incompetech.com) · CC BY 3.0</div>`));}
   tyMsg(sup?"Entra el suplente: sale de boxes y va al fondo de la grilla":"Gran Final: presentación de los pilotos","var(--oro)");}
+const TY_REMATE={e_rem1:"¡Un aplauso!",e_rem2:"¡Atención con él!",e_rem3:"¡Viene con todo, señores!",e_rem4:"¡La tribuna lo ovaciona!",e_rem5:"¡Qué temporada viene haciendo!",e_rem_yo:"¡El piloto del pueblo!"};
+const TY_MUJ=new Set(["t70","t71","t72","t73","t74","t130","t131","t132","t133","t134","t135"]);
+function tyPresRemate(e,k){if(e.yo)return "e_rem_yo";if((k*7+3)%3!==0)return null;const muj=TY_MUJ.has(e.id),L=muj?["e_rem1","e_rem3","e_rem5"]:["e_rem1","e_rem2","e_rem3","e_rem4","e_rem5"];return L[Math.floor(Math.random()*L.length)];}
 function tyPresTurno(R,A,t){const P=A.pres,o=A.items[P.k],e=o.e,k=P.k;o.delay=t;P.tUlt=t;P.k++;
   const num=tyLocNum(e.num),nom=tyLocNom(e),fila=Math.floor(k/4),caj=k%4;let seq,txt;
   if(P.sup){seq=["e_suplente",...num,{k:nom[0],gap:.12}];txt=`Ingresa el suplente, máquina número ${e.num}… ${e.n}`;}
-  else if(fila===0){const ab=[["e_pista",{k:"e_maquina",gap:.25}],["e_su_lado"],["e_tercer",{k:"e_el_numero",gap:.12}],["e_externa"]][caj];
+  else{const ab=[[fila===0?"e_pista":fila===1?"e_fila2":"e_fila3",{k:fila===0?"e_maquina":"e_interna",gap:.25}],["e_su_lado"],["e_tercer",{k:"e_el_numero",gap:.12}],["e_externa"]][caj];
     seq=[...ab,{k:num[0],gap:.1},...num.slice(1),{k:nom[0],gap:.18}];
-    txt=[`¡A la pista! Máquina número ${e.num}… ${e.n}`,`A su lado, con el número ${e.num}… ${e.n}`,`En el tercer cajón sale… el número ${e.num}… ${e.n}`,`Y contra la cuerda externa, el número ${e.num}… ${e.n}`][caj];}
-  else{seq=caj===0?[fila===1?"e_fila2":"e_fila3",{k:nom[0],gap:.3}]:[nom[0]];txt=(caj===0?(fila===1?"¡Segunda fila! ":"¡Tercera fila! "):"")+e.n;}
+    // un remate de vez en cuando (a vos siempre: "¡El piloto del pueblo!")
+    const rem=tyPresRemate(e,k);if(rem)seq.push({k:rem,gap:.35});
+    const ini=fila===0?["¡A la pista! Máquina número","A su lado, con el número","En el tercer cajón sale… el número","Y contra la cuerda externa, el número"][caj]:[(fila===1?"¡Segunda fila! ":"¡Tercera fila! ")+"Por la cuerda interna, el número","A su lado, con el número","En el tercer cajón sale… el número","Y contra la cuerda externa, el número"][caj];
+    txt=`${ini} ${e.num}… ${e.n}${rem?" "+TY_REMATE[rem]:""}`;}
   tyLocutor(seq.filter(x=>x&&(typeof x==="string"||x.k)),txt);
   tyPresPlaca(e,P.sup?"Ingresa el suplente · larga último":`Fila ${fila+1} · cajón ${caj+1}`);}
 {const _ap=tyAnimPaso;tyAnimPaso=function(R,now){const A=R.anim;
