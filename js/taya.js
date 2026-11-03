@@ -795,7 +795,7 @@ function tyDraw(R){const cv=$("#tyScene");if(!cv)return;const dpr=prUltra(Math.m
     E.cam.updateProjectionMatrix();
     ren.setClearColor(0x05070d,1);gfxRender(E.sc,E.cam,w,h);}
   else{ctx.fillStyle="#0a0d16";ctx.fillRect(0,0,w,h);ctx.fillStyle="#f3e9d2";ctx.font=`600 ${Math.round(h*.04)}px sans-serif`;ctx.textAlign="center";ctx.fillText(R.loading?"Preparando los midgets…":"",w/2,h/2);}
-  if(R.esperaLuz)drawLights(ctx,w,h,R.phase);
+  if(R.esperaLuz&&!(TY3.env&&TY3.env.sema))drawLights(ctx,w,h,R.phase); /* con el semáforo 3D no va el de pantalla */
   if(R.roja){ctx.fillStyle="rgba(200,20,30,.85)";ctx.fillRect(0,h*.42,w,h*.1);ctx.fillStyle="#fff";ctx.font=`900 ${Math.round(h*.06)}px 'Barlow Condensed',sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("BANDERA ROJA",w/2,h*.47);ctx.textBaseline="alphabetic";}
   // torre de posiciones
   const pos=R.pos.length?R.pos:tyPosiciones(R),yo=pos.indexOf(R.P),cssK=w/(ctx.canvas.clientWidth||w),fs=Math.round(Math.max(13*cssK,Math.min(h*.032,w*.045))),top0=Math.max(h*.12,(58*cssK)+fs);ctx.font=`700 ${fs}px "Barlow Condensed",sans-serif`;
