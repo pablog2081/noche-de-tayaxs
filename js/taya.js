@@ -875,7 +875,7 @@ function narraF(k,p){p=p||{};if(typeof TYR!=="undefined"&&TYR&&TYR.c.entreno)ret
   if(!(muted||noVoz||!AC)){narLoadF();const it={clips,prio,t:performance.now()};if(prio){NARF.q=NARF.q.filter(x=>x.prio);NARF.q.push(it);}else if(NARF.q.length<1&&!(NARF.busy&&k==="pasa"))NARF.q.push(it);narPlayF();}
   if(TYR)tyMsg("🎙️ "+txt.join(" ").replace(/ ([,!.])/g,"$1"),"var(--celeste)");}
 function narLoadF(){if(NARF.buf||NARF.loading||!AC)return;NARF.loading=true;
-  Promise.all([fetch("taya/relato.json?v=73").then(r=>r.json()),fetch("taya/relato.mp3?v=73").then(r=>r.arrayBuffer())]).then(([m,ab])=>{NARF.map=m;return new Promise((res,rej)=>AC.decodeAudioData(ab,res,rej));}).then(b=>{NARF.buf=b;narPlayF();}).catch(()=>{NARF.loading=false;});}
+  Promise.all([fetch("taya/relato.json?v=74").then(r=>r.json()),fetch("taya/relato.mp3?v=74").then(r=>r.arrayBuffer())]).then(([m,ab])=>{NARF.map=m;return new Promise((res,rej)=>AC.decodeAudioData(ab,res,rej));}).then(b=>{NARF.buf=b;narPlayF();}).catch(()=>{NARF.loading=false;});}
 function narPlayF(){if(NARF.busy||!NARF.q.length||!NARF.buf||!AC)return;const it=NARF.q.shift();if(!it.prio&&performance.now()-it.t>2500){narPlayF();return;}const cl=it.clips.filter(c=>c&&NARF.map[c]);if(!cl.length){narPlayF();return;}
   NARF.busy=true;if(!NARF.gain){NARF.gain=AC.createGain();NARF.gain.gain.value=1.2*VOL.rel;NARF.gain.connect(AC.destination);}
   let t=AC.currentTime+.03;const srcs=[];cl.forEach((c,i)=>{const [o,d]=NARF.map[c];const s=AC.createBufferSource(),g=AC.createGain();s.buffer=NARF.buf;

@@ -29,10 +29,10 @@ function tyLocOut(){if(LOC.out||!AC)return LOC.out;const g=AC.createGain(),dl=AC
   g.connect(hp);hp.connect(AC.destination);hp.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(AC.destination);LOC.out=g;return g;}
 function tyLocStop(){LOC.src.forEach(s=>{try{s.stop();}catch(x){}});LOC.src=[];LOC.busy=false;clearTimeout(LOC.tm);}
 // items: clave del clip, o {k, gap} (gap: pausa antes, puede ser negativa para pegarlas)
-function tyLocutor(items,txt){tyLocStop();const M=NARF.map||{},ok=!(muted||noVoz)&&AC&&NARF.buf;let t=ok?AC.currentTime+.03:0,tot=0;LOC.busy=true;if(!ok)narLoadF();
+function tyLocutor(items,txt,seco){tyLocStop();const M=NARF.map||{},ok=!(muted||noVoz)&&AC&&NARF.buf;let t=ok?AC.currentTime+.03:0,tot=0;LOC.busy=true;if(!ok)narLoadF();
   items.forEach((it,i)=>{const o=typeof it==="string"?{k:it}:it,c=M[o.k];if(!c)return;const [off,d]=c,gap=i?(o.gap!=null?o.gap:-.05):0;
     if(ok){t+=gap;const s=AC.createBufferSource(),g=AC.createGain();s.buffer=NARF.buf;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(1.15*VOL.rel,t+.02);g.gain.setValueAtTime(1.15*VOL.rel,t+Math.max(.03,d-.04));g.gain.linearRampToValueAtTime(0,t+d);
-      s.connect(g);g.connect(tyLocOut());s.start(t,off,d);LOC.src.push(s);t+=d;}
+      s.connect(g);g.connect(seco?AC.destination:tyLocOut());s.start(t,off,d);LOC.src.push(s);t+=d;}
     tot+=gap+d;});
   if(!tot)tot=1.2;LOC.tm=setTimeout(()=>{LOC.busy=false;},(tot+.15)*1000);if(txt&&TYR)tyMsg("🏟️ "+txt,"var(--oro)");}
 const tyLocNum=n=>{n=n|0;return n<=100?["e_num_"+n]:n<200?["e_num_ciento",{k:"e_num_"+(n-100),gap:-.04}]:[];};
@@ -40,7 +40,7 @@ const tyLocNom=e=>e.yo?(S.tyVoz?["e_yo_"+S.tyVoz]:[]):["e_n_"+e.id];
 /* ---------- la música: Also sprach Zarathustra ---------- */
 const ZARA={a:null};
 function tyZaraVol(){if(!ZARA.a)return;const base=(muted||noMus)?0:Math.min(1,.9*VOL.mus*1.4);ZARA.a.volume=Math.max(0,Math.min(1,base*(LOC.busy?.45:1)*(ZARA.fade??1)));}
-function tyZara(on){if(on){try{if(!ZARA.a){ZARA.a=new Audio("taya/zaratustra.mp3?v=1");ZARA.a.preload="auto";}ZARA.fade=1;ZARA.a.currentTime=0;tyZaraVol();ZARA.a.play().catch(()=>{});}catch(x){}return;}
+function tyZara(on){if(on){try{if(!ZARA.a){ZARA.a=new Audio("taya/zaratustra.mp3?v=1#t=10");ZARA.a.preload="auto";ZARA.a.addEventListener("loadedmetadata",()=>{if(ZARA.a.currentTime<9)ZARA.a.currentTime=10;});}ZARA.fade=1;try{ZARA.a.currentTime=10;}catch(x){} /* el tema arranca en el segundo 10 */tyZaraVol();ZARA.a.play().catch(()=>{});}catch(x){}return;}
   if(!ZARA.a||ZARA.a.paused)return;const t0=performance.now(),f=()=>{ZARA.fade=Math.max(0,1-(performance.now()-t0)/2500);tyZaraVol();if(ZARA.fade>0)requestAnimationFrame(f);else ZARA.a.pause();};f();}
 function tyPresentar(R,cars,cb,sup){const items=cars.map((e,i)=>{const gdist=e.dist,gd=e.d;return {e,r:tyPresRuta(e,gdist,gd,i),delay:1e9,fin:e=>{e.dist=gdist;e.s=gdist;e.d=gd;}};});
   if(!items.length){cb();return;}
@@ -66,7 +66,8 @@ function tyPresTurno(R,A,t){const P=A.pres,o=A.items[P.k],e=o.e,k=P.k;o.delay=t;
 {const _ap=tyAnimPaso;tyAnimPaso=function(R,now){const A=R.anim;
   if(A&&A.pres){const t=A.frz!=null?A.frz:(now-A.t0)/1000,P=A.pres;tyZaraVol();
     // con la música: a los 9 s (cuando termina la primera fanfarria) el locutor anuncia "¡FI… NAL… deganadores!"
-    if(P.fase===0&&t>9.3){P.fase=1;tyLocutor(["e_fi",{k:"e_nal",gap:.22},{k:"e_deganadores",gap:-.02}],"¡FI… NAL… deGANADORES!");P.tF=t;}
+    // Fefón: "¡Final de ganadores!" cuando el tema llega al segundo 25 (a los 15 s de arrancar), sin eco de altoparlante
+    if(P.fase===0&&((ZARA.a&&!ZARA.a.paused&&ZARA.a.currentTime>=25)||t>15.3)){P.fase=1;tyLocutor(["e_final"],"¡Fiiiinaaal… de ganadoreees!",true);P.tF=t;}
     else if(P.fase===1&&t-P.tF>1&&!LOC.busy){P.fase=2;P.listo=true;P.tUlt=t-1;}
     else if(P.listo&&P.k<A.items.length){const fila=Math.floor(P.k/4),min=P.sup?0:fila===0?1.2:1.9;if(t-P.tUlt>min&&(!LOC.busy||t-P.tUlt>7))tyPresTurno(R,A,t);}
     if(P.k>=A.items.length&&A.dur>1e8)A.dur=Math.max(...A.items.map(o=>o.delay+o.r.len/A.vel))+.8;}
